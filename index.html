@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ลงทะเบียน Mellow Sundae</title>
+  <link href="styles.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <img class="logo" src="https://instagram.fdel21-1.fna.fbcdn.net/v/t51.2885-19/329536177_535391278688288_1784270868110439823_n.jpg" alt="Mellow Sundae Logo">
+    <h2>แบบฟอร์มลงทะเบียนเข้าร่วมงาน</h2>
+    
+    <form action="https://script.google.com/macros/s/AKfycbxL-xNYM65rJSApCasIANBWJWyPcSoQmRSGPSRWCrH5tofnxxxKMhQMdFSdRr2ZOHJ3/exec" method="POST" id="regForm">
+      
+      <label for="activity">ชื่อกิจกรรม</label>
+      <input type="text" name="activity" value="Mellow Sundae 2025" readonly class="readonly-input">
+
+      <label for="fullname">ชื่อ-นามสกุล *</label>
+      <input type="text" name="fullname" required>
+
+      <label for="phone">เบอร์โทรศัพท์ *</label>
+      <input type="tel" name="phone" required>
+
+      <label for="followers">จำนวนผู้ติดตาม</label>
+      <select name="followers">
+        <option value="1 คน">1 คน</option>
+        <option value="2 คน">2 คน</option>
+        <option value="3 คน">3 คน</option>
+        <option value="4 คน">4 คน</option>
+      </select>
+
+      <label for="ig">IG</label>
+      <input type="text" name="ig">
+
+      <label for="first_time">เคยมาร่วม Mellow.Sundae มาก่อนรึเปล่า?</label>
+      <select name="first_time">
+        <option value="มาครั้งแรก">มาครั้งแรก</option>
+        <option value="เคยมาแล้ว">เคยมาแล้ว</option>
+      </select>
+
+      <button type="submit">ส่งข้อมูล</button>
+    </form>
+
+    <p class="footer-note">จัดโดย Mellow.Sundae</p>
+  </div>
+</body>
+</html>
