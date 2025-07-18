@@ -6,6 +6,43 @@
   <title>ลงทะเบียน Mellow Sundae</title>
   <link href="styles.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #fff8f0;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #ffa366;
+      color: white;
+      margin-top: 1.5rem;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .footer-note {
+      margin-top: 2rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -15,7 +52,7 @@
     <form action="https://script.google.com/macros/s/AKfycbzHprFCAnSjVtlpd1JbfbxF477jq9N_T87Po7uh-BhD-hxMd4V5KDivcUQBC7waMhwy/exec" method="POST" id="regForm">
       
       <label for="activity">ชื่อกิจกรรม</label>
-      <input type="text" name="activity" value="Mellow.Sundae x PERSONA HEALTH x Togeta" readonly class="readonly-input">
+      <input type="text" id="activity" name="activity" readonly class="readonly-input">
 
       <label for="fullname">ชื่อ-นามสกุล *</label>
       <input type="text" name="fullname" required>
@@ -23,14 +60,16 @@
       <label for="phone">เบอร์โทรศัพท์ *</label>
       <input type="tel" name="phone" required>
 
-      <label for="followers">จำนวนผู้ติดตาม</label>
-      <select name="followers">
-        <option value="0 คน">0 คน</option>
-        <option value="1 คน">1 คน</option>
-        <option value="2 คน">2 คน</option>
-        <option value="3 คน">3 คน</option>
-        <option value="4 คน">4 คน</option>
-      </select>
+      <div id="followers-field">
+        <label for="followers">จำนวนผู้ติดตาม</label>
+        <select name="followers">
+          <option value="0 คน">0 คน</option>
+          <option value="1 คน">1 คน</option>
+          <option value="2 คน">2 คน</option>
+          <option value="3 คน">3 คน</option>
+          <option value="4 คน">4 คน</option>
+        </select>
+      </div>
 
       <label for="ig">IG</label>
       <input type="text" name="ig">
@@ -41,10 +80,43 @@
         <option value="เคยมาแล้ว">เคยมาแล้ว</option>
       </select>
 
-      <button type="submit">ส่งข้อมูล</button>
+      <button type="submit" id="submitBtn">ส่งข้อมูล</button>
     </form>
 
     <p class="footer-note">Mellow.Sundae</p>
   </div>
+
+  <script>
+    // อ่าน URL parameter
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // ตั้งค่ากิจกรรม
+    const activityInput = document.getElementById("activity");
+    const activityFromUrl = getQueryParam("activity");
+    activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
+
+    // เปิดปิด allow follower
+    const allowFollowers = getQueryParam("allow_followers");
+    const followersField = document.getElementById("followers-field");
+    
+    if (allowFollowers === "no" || allowFollowers === "false" || allowFollowers === "off") {
+      followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';;
+      // ถ้าต้องการลบค่าจาก form ด้วย
+      const input = followersField.querySelector("select");
+      if (input) input.disabled = true;
+    }
+
+    // ป้องกันกดซ้ำ
+    const form = document.getElementById("regForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", function () {
+      submitBtn.disabled = true;
+      submitBtn.innerText = "กำลังส่ง...";
+    });
+  </script>
 </body>
 </html>
