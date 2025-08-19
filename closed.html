@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -49,8 +50,7 @@
     <h2>Mellow.Sundae</h2>
     <h2>แบบฟอร์มลงทะเบียนเข้าร่วมงาน</h2>
     
-    <form action="https://script.google.com/macros/s/AKfycbyJHrNJAO7MoaKUJE_V1w6PeGrD0LjPtDaDPkTljoQesiE9zR8GGH4TJ7BxoS0LDp_S/exec" method="POST" id="regForm">
-      
+    <form id="regForm">
       <label for="activity">ชื่อกิจกรรม</label>
       <input type="text" id="activity" name="activity" readonly class="readonly-input">
 
@@ -93,35 +93,49 @@
   </div>
 
   <script>
-    // อ่าน URL parameter
     function getQueryParam(name) {
       const params = new URLSearchParams(window.location.search);
       return params.get(name);
     }
 
-    // ตั้งค่ากิจกรรม
     const activityInput = document.getElementById("activity");
     const activityFromUrl = getQueryParam("activity");
     activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
 
-    // เปิดปิด allow follower
     const allowFollowers = getQueryParam("allow_followers");
     const followersField = document.getElementById("followers-field");
-    
     if (allowFollowers === "no" || allowFollowers === "false" || allowFollowers === "off") {
-      followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';;
-      // ถ้าต้องการลบค่าจาก form ด้วย
+      followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';
       const input = followersField.querySelector("select");
       if (input) input.disabled = true;
     }
 
-    // ป้องกันกดซ้ำ
     const form = document.getElementById("regForm");
     const submitBtn = document.getElementById("submitBtn");
 
-    form.addEventListener("submit", function () {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
       submitBtn.disabled = true;
       submitBtn.innerText = "กำลังส่ง...";
+
+      const formData = new FormData(form);
+
+      fetch("https://script.google.com/macros/s/AKfycbyJHrNJAO7MoaKUJE_V1w6PeGrD0LjPtDaDPkTljoQesiE9zR8GGH4TJ7BxoS0LDp_S/exec", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.text())
+      .then(data => {
+        alert("✅ ลงทะเบียนสำเร็จแล้ว ขอบคุณค่ะ!");
+        form.reset();
+        submitBtn.disabled = false;
+        submitBtn.innerText = "ส่งข้อมูลอีกครั้ง";
+      })
+      .catch(err => {
+        alert("❌ เกิดข้อผิดพลาด กรุณาลองใหม่");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "ส่งข้อมูล";
+      });
     });
   </script>
 </body>
