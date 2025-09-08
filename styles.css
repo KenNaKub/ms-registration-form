@@ -1,78 +1,226 @@
+/* ===============================
+   Mellow.Sundae — styles.css
+   (Form + Modal + Buttons)
+   =============================== */
+
+/* ===== Variables ===== */
+:root {
+  /* Colors */
+  --color-primary: #ffa366;
+  --color-primary-hover: #ff944d;
+  --color-primary-strong: #ff7a1f;
+  --color-text: #5a4333;
+  --color-text-light: #a97450;
+  --color-bg: #fff8f0;
+  --color-white: #ffffff;
+  --color-border: #ddd;
+  --color-disabled: #ccc;
+  --color-heading: #e07b39;
+
+  /* Effects */
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-strong: 0 20px 60px rgba(0,0,0,.25);
+
+  /* Spacing */
+  --spacing-2xs: 0.2rem;
+  --spacing-xs: 0.3rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Container */
+  --container-max-width: 600px;
+  --container-padding: 2rem;
+}
+
+/* ===== Base ===== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
   font-family: 'Kanit', sans-serif;
-  background-color: #fff8f0;
-  color: #5a4333;
+  background: #faf7f2;
+  color: var(--color-text);
   margin: 0;
-  padding: 0;
+  line-height: 1.5;
 }
 
-.container {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 1rem;
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
+/* ===== Headings ===== */
 h2 {
   text-align: center;
-  color: #e07b39;
-  margin-bottom: 1.5rem;
+  color: var(--color-heading);
+  margin: 0 0 var(--spacing-lg);
 }
 
+/* ===== Layout ===== */
+.container {
+  max-width: var(--container-max-width);
+  margin: var(--spacing-xl) auto;
+  padding: var(--container-padding);
+  background: var(--color-bg);   /* ใช้ตัวแปร bg = #fff8f0 */
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+/* ===== Form Elements ===== */
 label {
   display: block;
-  margin-top: 1rem;
-  font-weight: bold;
+  margin-top: var(--spacing-md);
+  font-weight: 700;
+  color: var(--color-text);
 }
 
 input[type="text"],
 input[type="tel"],
-select {
+select,
+button {
   width: 100%;
   padding: 0.6rem;
   font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 0.3rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  margin-top: var(--spacing-xs);
+  transition: all .25s ease;
+  background: var(--color-white);
+  color: var(--color-text);
 }
 
+input[type="text"]:focus,
+input[type="tel"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255,163,102,.18);
+}
+
+input[readonly],
+.readonly-input {
+  background-color: #bcb8b3;
+  color: #555;
+  border-color: var(--color-disabled);
+  cursor: not-allowed;
+}
+
+/* Submit Button (default) */
 button {
-  background-color: #ffa366;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   border: none;
   padding: 0.8rem;
-  font-size: 1rem;
-  width: 100%;
-  border-radius: 8px;
-  margin-top: 2rem;
+  margin-top: var(--spacing-xl);
   cursor: pointer;
-  transition: background 0.3s;
+  font-weight: 700;
+}
+button:hover:not(:disabled) { background-color: var(--color-primary-hover); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled {
+  background-color: var(--color-disabled);
+  cursor: not-allowed;
 }
 
-button:hover {
-  background-color: #ff944d;
-}
-
-.readonly-input {
-  background-color: #eee;
-  color: #555;
-  border: 1px solid #ccc;
-}
-
+/* ===== Utility ===== */
 .footer-note {
   text-align: center;
-  margin-top: 2rem;
-  font-size: 0.9rem;
-  color: #a97450;
+  margin-top: var(--spacing-xl);
+  font-size: .9rem;
+  color: var(--color-text-light);
+}
+
+/* ===== Buttons (shared) ===== */
+.btn {
+  padding: .7rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);      /* อ่อนกว่าขาว เพื่อไม่ “จม” บนโมดัล */
+  color: var(--color-text);
+  cursor: pointer;
+  width: auto;
+  transition: background-color .25s ease, box-shadow .25s ease;
+}
+.btn:hover { background: #f1f1f1; }
+.btn:disabled {
+  background: var(--color-disabled);
+  color: #fff;
+  border-color: var(--color-disabled);
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-primary:active:not(:disabled) { background: var(--color-primary-strong); }
+
+/* ===== Modal ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  z-index: 999;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  z-index: 1000;
+}
+
+.modal.show, .modal-backdrop.show { display: grid; }
+
+.modal-card {
+  width: min(520px, 92vw);
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.25rem 1rem;
+  box-shadow: var(--shadow-strong);
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0 0 .5rem;
+}
+
+.modal-body {
+  color: #333;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: .6rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.modal-actions .btn,
+.modal-actions .btn-primary { width: 100%; }
+
+/* KBD (tips) */
+.kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #f3f3f3;
+  border: 1px solid #e5e5e5;
+  padding: .05rem .4rem;
+  border-radius: 6px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .container {
+    margin: var(--spacing-md);
+    padding: var(--spacing-md);
+  }
+  button { margin-top: var(--spacing-lg); }
 }

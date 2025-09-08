@@ -6,43 +6,7 @@
   <title>ลงทะเบียน Mellow Sundae</title>
   <link href="styles.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Kanit', sans-serif; background:#faf7f2; }
-    .container {
-      max-width: 600px; margin: 2rem auto; padding: 2rem; background: #fff8f0;
-      border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.1);
-    }
-    input, select, button {
-      width: 100%; padding: .6rem; margin-top: .5rem; border-radius: 8px;
-      border: 1px solid #ddd; font-size: 1rem; background:#fff;
-    }
-    .readonly-input { background:#f6f2ec; }
-    button { background-color: #ffa366; color:#fff; margin-top: 1.5rem; cursor: pointer; }
-    button:disabled { background-color:#ccc; cursor:not-allowed; }
-    .footer-note { margin-top:2rem; text-align:center; font-size:.9rem; color:#aaa; }
 
-    /* Modal */
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; z-index: 999;
-    }
-    .modal {
-      position: fixed; inset: 0; display: none; place-items: center; z-index: 1000;
-    }
-    .modal.show, .modal-backdrop.show { display: grid; }
-    .modal-card{
-      width:min(520px, 92vw); background:#fff; border-radius:16px; padding:1.25rem 1.25rem 1rem;
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
-    }
-    .modal-title{ font-size:1.15rem; font-weight:700; margin-bottom:.5rem }
-    .modal-body{ color:#333; line-height:1.6 }
-    .modal-actions{ display:flex; gap:.6rem; margin-top:1rem; flex-wrap:wrap }
-    .btn{
-      padding:.7rem 1rem; border-radius:10px; border:1px solid #ddd; background:#fff; cursor:pointer
-    }
-    .btn-primary{ background:#ff994d; border-color:#ff994d; color:#fff }
-    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-          background:#f3f3f3; border:1px solid #e5e5e5; padding:.05rem .4rem; border-radius:6px }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -54,7 +18,6 @@
       action="https://script.google.com/macros/s/AKfycbyJHrNJAO7MoaKUJE_V1w6PeGrD0LjPtDaDPkTljoQesiE9zR8GGH4TJ7BxoS0LDp_S/exec"
       method="POST"
       id="regForm"
-      target="_blank"
     >
       <label for="activity">ชื่อกิจกรรม</label>
       <input type="text" id="activity" name="activity" readonly class="readonly-input">
@@ -102,26 +65,26 @@
   <div class="modal-backdrop" id="iabBackdrop"></div>
   <div class="modal" id="iabModal" role="dialog" aria-modal="true" aria-labelledby="iabTitle">
     <div class="modal-card">
-      <div class="modal-title" id="iabTitle">⚠️ ไม่รองรับการลงทะเบียนผ่านแอปนี้</div>
+      <div class="modal-title" id="iabTitle">⚠️ ไม่รองรับการลงทะเบียนผ่าน in-app browser</div>
       <div class="modal-body">
         ระบบตรวจพบว่าคุณกำลังเปิดลิงก์จาก <b>in-app browser</b> (เช่น Facebook / Instagram / LINE)
-        ซึ่งอาจส่งข้อมูลไปยังฐานข้อมูลลงทะเบียนไม่สำเร็จ
+        ซึ่งอาจส่งข้อมูลลงทะเบียนไม่สำเร็จ
         <br><br>
         กรุณาเปิดหน้านี้ใน <b>Safari</b> หรือ <b>Chrome</b> แล้วลองอีกครั้ง
         <div style="margin-top:.5rem; color:#666">
           วิธีลัด:
           <ul style="margin:.25rem 0 .5rem 1.25rem;">
-            <li>แตะ <span class="kbd">⋯</span> / <span class="kbd">…</span> ด้านบนขวา → เลือก <b>Open in Browser</b></li>
+            <li>แตะ <span class="kbd">⋯</span> หรือ <span class="kbd">…</span> ด้านบนขวา → เลือก <b>Open in Browser</b></li>
             <li>หรือกด <b>คัดลอกลิงก์</b> แล้ววางในเบราว์เซอร์ภายนอก</li>
           </ul>
         </div>
       </div>
-      <div class="modal-actions">
-        <button class="btn" id="copyLinkBtn">คัดลอกลิงก์</button>
-        <a class="btn btn-primary" id="openNewTab" target="_blank" rel="noopener">เปิดในเบราว์เซอร์</a>
+      <div class="modal-actions" style="flex-direction: column; gap: .5rem;">
+        <button class="btn" id="copyLinkBtn" style="width:100%">📋 คัดลอกลิงก์</button>
       </div>
     </div>
   </div>
+
 
   <script>
     /* ---------- URL params ---------- */
@@ -129,68 +92,130 @@
       const params = new URLSearchParams(window.location.search);
       return params.get(name);
     }
-
+  
     /* ---------- IAB detection ---------- */
     function isInAppBrowser(){
       const ua = navigator.userAgent || '';
-      // ครอบคลุม FB/IG/LINE/WeChat/TikTok/Twitter และ WebView ทั่วไป
       return /FBAN|FBAV|FB_IAB|FBIOS|FB4A|Instagram|Line\/|MicroMessenger|TikTok|Twitter|wv\)|; wv/i.test(ua);
     }
-
+  
     /* ---------- Modal helpers ---------- */
     function showIabModal(){
-      document.getElementById('iabModal').classList.add('show');
-      document.getElementById('iabBackdrop').classList.add('show');
+      const modal = document.getElementById('iabModal');
+      const backdrop = document.getElementById('iabBackdrop');
+      if (!modal || !backdrop) return;
+      modal.classList.add('show');
+      backdrop.classList.add('show');
+      // กันกรณี CSS อื่นทับ
+      modal.style.display = 'grid';
+      backdrop.style.display = 'block';
     }
-
-    /* ---------- Init form ---------- */
-    const activityInput = document.getElementById("activity");
-    const activityFromUrl = getQueryParam("activity");
-    activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
-
-    const allowFollowers = (getQueryParam("allow_followers") || "").toLowerCase();
-    const followersField = document.getElementById("followers-field");
-    if (["no","false","off","0"].includes(allowFollowers)) {
-      followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';
+    function hideIabModal(){
+      const modal = document.getElementById('iabModal');
+      const backdrop = document.getElementById('iabBackdrop');
+      if (!modal || !backdrop) return;
+      modal.classList.remove('show');
+      backdrop.classList.remove('show');
+      modal.style.display = '';
+      backdrop.style.display = '';
     }
-
-    /* ---------- Submit guard ---------- */
-    const form = document.getElementById("regForm");
-    const submitBtn = document.getElementById("submitBtn");
-    const copyLinkBtn = document.getElementById("copyLinkBtn");
-    const openNewTabBtn = document.getElementById("openNewTab");
-    openNewTabBtn.href = window.location.href;
-
-    // copy current URL
-    copyLinkBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        copyLinkBtn.textContent = "คัดลอกแล้ว ✓";
-      } catch {
-        copyLinkBtn.textContent = "คัดลอกไม่สำเร็จ";
+  
+    /* ---------- Init after DOM ready ---------- */
+    document.addEventListener('DOMContentLoaded', function(){
+      // ตั้งค่ากิจกรรม
+      const activityInput = document.getElementById("activity");
+      const activityFromUrl = getQueryParam("activity");
+      if (activityInput) activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
+  
+      // เปิด/ปิด followers
+      const allowFollowers = (getQueryParam("allow_followers") || "").toLowerCase();
+      const followersField = document.getElementById("followers-field");
+      if (followersField && ["no","false","off","0"].includes(allowFollowers)) {
+        followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';
       }
-    });
-
-    // ถ้าเปิดใน IAB: โชว์ modal และกันการส่งฟอร์ม
-    if (isInAppBrowser()) {
-      showIabModal();
-      submitBtn.disabled = true;
-      submitBtn.textContent = "กรุณาเปิดใน Browser ภายนอก";
-      // (ไม่ disable input เพื่อให้ผู้ใช้ดูแบบฟอร์มได้ แต่กดส่งไม่ได้)
-    }
-
-    form.addEventListener("submit", function (e) {
-      if (isInAppBrowser()) {
-        // ❌ กันการ submit ใน IAB เพื่อไม่ให้ไปเจอ error หน้า Google Script
-        e.preventDefault();
+  
+      // elements
+      const form = document.getElementById("regForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const copyLinkBtn = document.getElementById("copyLinkBtn");
+  
+      // copy current URL
+      if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            copyLinkBtn.textContent = "คัดลอกแล้ว ✓";
+          } catch {
+            copyLinkBtn.textContent = "คัดลอกไม่สำเร็จ";
+          }
+        });
+      }
+  
+      // === TEST MODES ===
+      const forceTest = getQueryParam('test_iab') === '1';
+  
+      // ปุ่มลอยสำหรับ dev (เฉพาะ file:// หรือ localhost)
+      const isDevHost = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (isDevHost) {
+        const btn = document.createElement('button');
+        btn.textContent = '🧪 Test Modal';
+        btn.style.position = 'fixed';
+        btn.style.right = '12px';
+        btn.style.bottom = '12px';
+        btn.style.zIndex = '2000';
+        btn.style.padding = '10px 14px';
+        btn.style.borderRadius = '10px';
+        btn.style.border = '1px solid #ddd';
+        btn.style.background = '#fff8f0';
+        btn.style.boxShadow = '0 6px 20px rgba(0,0,0,.15)';
+        btn.onclick = () => {
+          // toggle
+          const visible = document.getElementById('iabModal').classList.contains('show');
+          if (visible) {
+            hideIabModal();
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'ส่งข้อมูล'; }
+          } else {
+            showIabModal();
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'กรุณาเปิดใน Browser ภายนอก'; }
+          }
+        };
+        document.body.appendChild(btn);
+  
+        // คีย์ลัด Ctrl/⌘ + M → toggle
+        document.addEventListener('keydown', (e) => {
+          const mod = e.ctrlKey || e.metaKey;
+          if (mod && e.key.toLowerCase() === 'm') btn.click();
+        });
+      }
+  
+      // ถ้าอยู่ใน IAB หรือเปิดโหมดทดสอบ → โชว์โมดัลและกันการส่งฟอร์ม
+      if (forceTest || isInAppBrowser()) {
         showIabModal();
-        return;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "กรุณาเปิดใน Browser ภายนอก";
+        }
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            showIabModal();
+            return false;
+          });
+        }
+      } else {
+        // เบราว์เซอร์ปกติ → ส่งฟอร์มได้และเด้งไปหน้าสำเร็จของ Google Script
+        if (form) {
+          form.addEventListener("submit", function () {
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.innerText = "กำลังส่ง...";
+            }
+          });
+        }
       }
-      // ✅ เบราว์เซอร์ปกติ: ส่งฟอร์มไป Google Script ตามเดิม (target="_blank" จะเปิดผลลัพธ์ในแท็บใหม่)
-      submitBtn.disabled = true;
-      submitBtn.innerText = "กำลังส่ง...";
     });
   </script>
+    
 </body>
 </html>
