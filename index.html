@@ -49,7 +49,14 @@
     <h2>Mellow.Sundae</h2>
     <h2>แบบฟอร์มลงทะเบียนเข้าร่วมงาน</h2>
     
-    <form id="regForm" onsubmit="return handleFormSubmit(event)">
+    <!-- Update your form to open in the system browser on mobile -->
+  <form 
+  action="https://script.google.com/macros/s/AKfycbyJHrNJAO7MoaKUJE_V1w6PeGrD0LjPtDaDPkTljoQesiE9zR8GGH4TJ7BxoS0LDp_S/exec" 
+  method="POST" 
+  id="regForm"
+  target="_blank"
+  onsubmit="setTimeout(() => { document.getElementById('submitBtn').disabled = true; }, 0);"
+  >
       
       <label for="activity">ชื่อกิจกรรม</label>
       <input type="text" id="activity" name="activity" readonly class="readonly-input">
@@ -80,10 +87,11 @@
         <option value="เคยมาแล้ว">เคยมาแล้ว</option>
       </select>
 
-      <label for="misc">ขนาดถุงเท้าที่ต้องการ</label>
+      <label for="misc">Pace ที่ต้องการวิ่ง</label>
       <select name="misc">
-        <option value="pb-socks-S">ถุงเท้า size S</option>
-        <option value="pb-socks-M">ถุงเท้า size M</option>
+        <option value="6-30">06:30</option>
+        <option value="7-30">07:30</option>
+        <option value="8-30">08:30</option>
       </select>
 
       <button type="submit" id="submitBtn">ส่งข้อมูล</button>
@@ -119,93 +127,16 @@
     const form = document.getElementById("regForm");
     const submitBtn = document.getElementById("submitBtn");
 
-    function handleFormSubmit(event) {
-      event.preventDefault();
-      
-      const form = event.target;
-      const submitBtn = document.getElementById('submitBtn');
-      const originalButtonText = submitBtn.innerText;
-      
-      // Disable the submit button
+    form.addEventListener("submit", function () {
       submitBtn.disabled = true;
-      submitBtn.innerText = 'กำลังส่ง...';
+      submitBtn.innerText = "กำลังส่ง...";
       
-      // Create form data
-      const formData = new FormData(form);
-      
-      // Add timestamp
-      formData.append('timestamp', new Date().toISOString());
-      
-      // Convert FormData to URL-encoded string
-      const urlEncodedData = new URLSearchParams();
-      for (const pair of formData.entries()) {
-        urlEncodedData.append(pair[0], pair[1]);
-      }
-      
-      // Create a new XMLHttpRequest
-      const xhr = new XMLHttpRequest();
-      
-      // Configure the request
-      xhr.open('POST', 'https://script.google.com/macros/s/AKfycbyBmlkv9THm-_UG0E7dPpQ-1lKI8qDRY5I00E9KQL2pgx_YnGLnDSRp1Hppx5kaCUzk/exec', true);
-      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      xhr.responseType = 'json';  // Add this line
-      
-      // Set up the callback for when the request completes
-      xhr.onload = function() {
-        try {
-          console.log('Response status:', xhr.status);
-          console.log('Response text:', xhr.responseText);
-          
-          if (xhr.status >= 200 && xhr.status < 300) {
-            // Success! Show success message and reset form
-            alert('ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ลงทะเบียน');
-            form.reset();
-          } else {
-            // Server returned an error
-            console.error('Server error:', xhr.status, xhr.statusText);
-            alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + xhr.statusText);
-          }
-        } catch (error) {
-          console.error('Error processing response:', error);
-          alert('เกิดข้อผิดพลาดในการประมวลผลการตอบกลับ');
-        } finally {
-          // Always re-enable the submit button
-          submitBtn.disabled = false;
-          submitBtn.innerText = originalButtonText;
-        }
-      };
-      
-      // Handle network errors
-      xhr.onerror = function() {
-        console.error('Network error occurred');
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง');
-        submitBtn.disabled = false;
-        submitBtn.innerText = originalButtonText;
-      };
-      
-      // Handle timeout
-      xhr.ontimeout = function() {
-        console.error('Request timed out');
-        alert('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
-        submitBtn.disabled = false;
-        submitBtn.innerText = originalButtonText;
-      };
-      
-      // Set a timeout (10 seconds)
-      xhr.timeout = 10000;
-      
-      // Send the request
-      try {
-        xhr.send(urlEncodedData.toString());
-      } catch (error) {
-        console.error('Error sending request:', error);
-        alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
-        submitBtn.disabled = false;
-        submitBtn.innerText = originalButtonText;
-      }
-      
-      return false;
-    }
+      // Add a small delay to allow the button state to update
+      setTimeout(() => {
+        // The form will submit normally to Google Apps Script
+        // The page will navigate to the Google Apps Script response
+      }, 100);
+    });
   </script>
 </body>
 </html>
