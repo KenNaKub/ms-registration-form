@@ -121,92 +121,86 @@
 
     function handleFormSubmit(event) {
       event.preventDefault();
-      submitBtn.disabled = true;
-      submitBtn.innerText = "กำลังส่ง...";
       
-      try {
-        // Create a form element to submit
-        const form = event.target;
-        const formData = new FormData(form);
-        
-        // Add timestamp
-        formData.append('timestamp', new Date().toISOString());
-        
-        // Create a hidden iframe to handle the response
-        const iframe = document.createElement('iframe');
-        iframe.name = 'form-iframe';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        
-        // Set form attributes for submission
-        const originalTarget = form.target;
-        const originalMethod = form.method;
-        const originalAction = form.action;
-        
-        form.target = 'form-iframe';
-        form.method = 'POST';
-        form.action = 'https://script.google.com/macros/s/AKfycbyJHrNJAO7MoaKUJE_V1w6PeGrD0LjPtDaDPkTljoQesiE9zR8GGH4TJ7BxoS0LDp_S/exec';
-        
-        // Handle the iframe load event
-        iframe.onload = function() {
-          try {
-            // This will work in most browsers, but not in all in-app browsers
-            const response = iframe.contentDocument?.body?.innerText || 'Success';
-            if (response.includes('Success') || response.includes('success')) {
-              alert('ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ลงทะเบียน');
-              form.reset();
-            } else {
-              throw new Error('Submission failed');
-            }
-          } catch (e) {
-            // If we can't read the iframe content, we'll still assume success
-            console.log('Assuming success, but could not verify response');
-            alert('ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ลงทะเบียน');
-            form.reset();
-          } finally {
-            // Clean up
-            cleanup();
-          }
-        };
-        
-        // Cleanup function
-        const cleanup = () => {
-          try {
-            if (document.body.contains(iframe)) {
-              document.body.removeChild(iframe);
-            }
-            // Restore original form attributes
-            form.target = originalTarget;
-            form.method = originalMethod;
-            form.action = originalAction;
-          } catch (e) {
-            console.error('Cleanup error:', e);
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = "ส่งข้อมูล";
-          }
-        };
-        
-        // Submit the form
-        form.submit();
-        
-        // For browsers that don't fire onload for form submission
-        setTimeout(cleanup, 5000);
-        
-      } catch (error) {
-        console.error('Form submission error:', error);
-        alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
-        submitBtn.disabled = false;
-        submitBtn.innerText = "ส่งข้อมูล";
+      const form = event.target;
+      const submitBtn = document.getElementById('submitBtn');
+      const originalButtonText = submitBtn.innerText;
+      
+      // Disable the submit button
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'กำลังส่ง...';
+      
+      // Create form data
+      const formData = new FormData(form);
+      
+      // Add timestamp
+      formData.append('timestamp', new Date().toISOString());
+      
+      // Convert FormData to URL-encoded string
+      const urlEncodedData = new URLSearchParams();
+      for (const pair of formData.entries()) {
+        urlEncodedData.append(pair[0], pair[1]);
       }
       
-      return false;
-      } catch (error) {
-        console.error('Error:', error);
-        alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
-      } finally {
+      // Create a new XMLHttpRequest
+      const xhr = new XMLHttpRequest();
+      
+      // Configure the request
+      xhr.open('POST', 'https://script.google.com/macros/s/AKfycbyJHrNJAO7MoaKUJE_V1w6PeGrD0LjPtDaDPkTljoQesiE9zR8GGH4TJ7BxoS0LDp_S/exec', true);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      
+      // Set up the callback for when the request completes
+      xhr.onload = function() {
+        try {
+          console.log('Response status:', xhr.status);
+          console.log('Response text:', xhr.responseText);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            // Success! Show success message and reset form
+            alert('ส่งข้อมูลสำเร็จแล้ว! ขอบคุณที่ลงทะเบียน');
+            form.reset();
+          } else {
+            // Server returned an error
+            console.error('Server error:', xhr.status, xhr.statusText);
+            alert('เกิดข้อผิดพลาดในการส่งข้อมูล: ' + xhr.statusText);
+          }
+        } catch (error) {
+          console.error('Error processing response:', error);
+          alert('เกิดข้อผิดพลาดในการประมวลผลการตอบกลับ');
+        } finally {
+          // Always re-enable the submit button
+          submitBtn.disabled = false;
+          submitBtn.innerText = originalButtonText;
+        }
+      };
+      
+      // Handle network errors
+      xhr.onerror = function() {
+        console.error('Network error occurred');
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง');
         submitBtn.disabled = false;
-        submitBtn.innerText = "ส่งข้อมูล";
+        submitBtn.innerText = originalButtonText;
+      };
+      
+      // Handle timeout
+      xhr.ontimeout = function() {
+        console.error('Request timed out');
+        alert('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalButtonText;
+      };
+      
+      // Set a timeout (10 seconds)
+      xhr.timeout = 10000;
+      
+      // Send the request
+      try {
+        xhr.send(urlEncodedData.toString());
+      } catch (error) {
+        console.error('Error sending request:', error);
+        alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalButtonText;
       }
       
       return false;
