@@ -4,52 +4,117 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ลงทะเบียน Mellow Sundae</title>
+  <link href="styles.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Kanit', sans-serif;
-      background-color: #fff8f0;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 3rem auto;
-      padding: 2rem;
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    h2 {
-      color: #e07b39;
-    }
-    .locked-message {
-      padding: 1.5rem;
-      background-color: #fff2e6;
-      border: 1px solid #ffa366;
-      border-radius: 8px;
-      color: #aa4400;
-      margin-top: 1.5rem;
-    }
-    .footer-note {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #aaa;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
     <h2>Mellow.Sundae</h2>
     <h2>แบบฟอร์มลงทะเบียนเข้าร่วมงาน</h2>
+    
+    <!-- FORM: no action/method/target, JS will handle submit -->
+    <form id="regForm">
+      <label for="activity">ชื่อกิจกรรม</label>
+      <input type="text" id="activity" name="activity" readonly class="readonly-input">
 
-    <div class="locked-message">
-      <h3>⏳ ยังไม่เปิดให้ลงทะเบียนในขณะนี้</h3>
-      <p>กรุณากลับมาใหม่อีกครั้ง หรือสอบถามทางเพจ <strong>Mellow.Sundae</strong></p>
-    </div>
+      <label for="fullname">ชื่อ-นามสกุล *</label>
+      <input type="text" name="fullname" required placeholder="เช่น เมลโล่ ซันเดย์">
+
+      <label for="phone">เบอร์โทรศัพท์ *</label>
+      <input type="tel" name="phone" required placeholder="เช่น 0823456789">
+
+      <div id="followers-field">
+        <label for="followers">จำนวนผู้ติดตาม</label>
+        <select name="followers">
+          <option value="0 คน">0 คน</option>
+          <option value="1 คน">1 คน</option>
+          <option value="2 คน">2 คน</option>
+          <option value="3 คน">3 คน</option>
+          <option value="4 คน">4 คน</option>
+        </select>
+      </div>
+
+      <label for="ig">IG</label>
+      <input type="text" name="ig" placeholder="เช่น @mellow.sundae">
+
+      <label for="first_time">เคยมาร่วม Mellow.Sundae มาก่อนรึเปล่า?</label>
+      <select name="first_time">
+        <option value="มาครั้งแรก">มาครั้งแรก</option>
+        <option value="เคยมาแล้ว">เคยมาแล้ว</option>
+      </select>
+
+      <label for="misc">Pace ที่ต้องการวิ่ง</label>
+      <select name="misc">
+        <option value="6-30">06:30</option>
+        <option value="7-30">07:30</option>
+        <option value="8-30">08:30</option>
+      </select>
+
+      <button type="submit" id="submitBtn">ส่งข้อมูล</button>
+      <p id="statusMessage" class="status-message"></p>
+    </form>
 
     <p class="footer-note">Mellow.Sundae</p>
   </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYlid-ONKPX_ERaH9F3Ak8y9u0v4iGr2kSKLFoZhQepwd5fKsB44HN2RqmTvJ_TSZj/exec";
+
+    // อ่าน URL parameter
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // ตั้งค่ากิจกรรม
+    const activityInput = document.getElementById("activity");
+    const activityFromUrl = getQueryParam("activity");
+    activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
+
+    // เปิดปิด allow follower
+    const allowFollowers = getQueryParam("allow_followers");
+    const followersField = document.getElementById("followers-field");
+    
+    if (allowFollowers === "no" || allowFollowers === "false" || allowFollowers === "off") {
+      followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';
+    }
+
+    const form = document.getElementById("regForm");
+    const submitBtn = document.getElementById("submitBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault(); // ❗ ไม่ให้ form redirect
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "กำลังส่ง...";
+      statusMessage.textContent = "";
+
+      // เก็บข้อมูลจาก form → URL-encoded (เหมือน form POST ปกติ)
+      const formData = new FormData(form);
+      const body = new URLSearchParams(formData);
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors", // ✅ เลี่ยง CORS/preflight, in-app browser friendly
+          body: body
+        });
+
+        // เราอ่าน response ไม่ได้ใน no-cors แต่ request จะถูกส่งออกไป
+        statusMessage.textContent = "✅ ลงทะเบียนสำเร็จ! ขอบคุณที่มาวิ่งกับเรา 🧡";
+        statusMessage.style.color = "#1a8754";
+        form.reset();
+        activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
+      } catch (error) {
+        console.error(error);
+        statusMessage.textContent = "❌ เกิดข้อผิดพลาด กรุณาลองใหม่ หรือทักเพจ Mellow.Sundae";
+        statusMessage.style.color = "#b00020";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "ส่งข้อมูล";
+      }
+    });
+  </script>
 </body>
 </html>
