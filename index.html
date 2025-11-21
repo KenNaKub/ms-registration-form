@@ -12,7 +12,6 @@
     <h2>Mellow.Sundae</h2>
     <h2>แบบฟอร์มลงทะเบียนเข้าร่วมงาน</h2>
     
-    <!-- FORM: no action/method/target, JS will handle submit -->
     <form id="regForm">
       <label for="activity">ชื่อกิจกรรม</label>
       <input type="text" id="activity" name="activity" readonly class="readonly-input">
@@ -51,63 +50,124 @@
       </select>
 
       <button type="submit" id="submitBtn">ส่งข้อมูล</button>
-      <p id="statusMessage" class="status-message"></p>
+      <p id="statusMessage"></p>
     </form>
 
     <p class="footer-note">Mellow.Sundae</p>
   </div>
 
-  <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyYlid-ONKPX_ERaH9F3Ak8y9u0v4iGr2kSKLFoZhQepwd5fKsB44HN2RqmTvJ_TSZj/exec";
+  <!-- BACKDROP -->
+  <div id="modalBackdrop" class="modal-backdrop"></div>
 
-    // อ่าน URL parameter
+  <!-- MODAL -->
+  <div id="modalBox" class="modal">
+    <div class="modal-card">
+      <h3 class="modal-title" id="modalTitle">กำลังส่งข้อมูล...</h3>
+
+      <div class="modal-spinner" id="modalSpinner"></div>
+
+      <div class="modal-body" id="modalBody">
+        กำลังบันทึกข้อมูลการลงทะเบียนของคุณ
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="modalCloseBtn" class="btn btn-primary" style="display:none;">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyAOH2Kn8IuGM183QY0FvQu_9tUkvX8pGDTbpJIMrXd7QP2XzH0tFaZumd83idCuecT/exec";
+
+    // ===== URL params =====
     function getQueryParam(name) {
       const params = new URLSearchParams(window.location.search);
       return params.get(name);
     }
 
-    // ตั้งค่ากิจกรรม
-    const activityInput = document.getElementById("activity");
+    const activityInput   = document.getElementById("activity");
     const activityFromUrl = getQueryParam("activity");
-    activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
+    activityInput.value   = activityFromUrl || "Mellow.Sundae Weekly Activity";
 
-    // เปิดปิด allow follower
-    const allowFollowers = getQueryParam("allow_followers");
-    const followersField = document.getElementById("followers-field");
-    
+    const allowFollowers  = getQueryParam("allow_followers");
+    const followersField  = document.getElementById("followers-field");
     if (allowFollowers === "no" || allowFollowers === "false" || allowFollowers === "off") {
       followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';
     }
 
-    const form = document.getElementById("regForm");
-    const submitBtn = document.getElementById("submitBtn");
+    // ===== Form + Modal =====
+    const form          = document.getElementById("regForm");
+    const submitBtn     = document.getElementById("submitBtn");
     const statusMessage = document.getElementById("statusMessage");
 
+    const modalBox      = document.getElementById("modalBox");
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle    = document.getElementById("modalTitle");
+    const modalBody     = document.getElementById("modalBody");
+    const modalSpinner  = document.getElementById("modalSpinner");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+    function openModalLoading() {
+      modalTitle.textContent = "กำลังส่งข้อมูล...";
+      modalBody.textContent  = "กำลังบันทึกข้อมูลการลงทะเบียนของคุณ";
+      modalSpinner.style.display = "block";
+      modalCloseBtn.style.display = "none";
+
+      modalBox.classList.add("show");
+      modalBackdrop.classList.add("show");
+    }
+
+    function openModalSuccess() {
+      modalTitle.textContent = "ลงทะเบียนสำเร็จ 🎉";
+      modalBody.textContent  = "ขอบคุณที่มาวิ่งกับ Mellow.Sundae 🧡";
+      modalSpinner.style.display = "none";
+      modalCloseBtn.style.display = "inline-block";
+    }
+
+    function openModalError() {
+      modalTitle.textContent = "มีบางอย่างผิดพลาด";
+      modalBody.textContent  = "กรุณาลองใหม่อีกครั้ง หรือทักเพจ Mellow.Sundae";
+      modalSpinner.style.display = "none";
+      modalCloseBtn.style.display = "inline-block";
+    }
+
+    function closeModal() {
+      modalBox.classList.remove("show");
+      modalBackdrop.classList.remove("show");
+    }
+
+    modalCloseBtn.addEventListener("click", closeModal);
+
     form.addEventListener("submit", async function (e) {
-      e.preventDefault(); // ❗ ไม่ให้ form redirect
+      e.preventDefault();
 
       submitBtn.disabled = true;
       submitBtn.innerText = "กำลังส่ง...";
       statusMessage.textContent = "";
 
-      // เก็บข้อมูลจาก form → URL-encoded (เหมือน form POST ปกติ)
+      openModalLoading();
+
       const formData = new FormData(form);
-      const body = new URLSearchParams(formData);
+      const body     = new URLSearchParams(formData);
 
       try {
         await fetch(WEB_APP_URL, {
           method: "POST",
-          mode: "no-cors", // ✅ เลี่ยง CORS/preflight, in-app browser friendly
+          mode: "no-cors",
           body: body
         });
 
-        // เราอ่าน response ไม่ได้ใน no-cors แต่ request จะถูกส่งออกไป
+        openModalSuccess();
         statusMessage.textContent = "✅ ลงทะเบียนสำเร็จ! ขอบคุณที่มาวิ่งกับเรา 🧡";
         statusMessage.style.color = "#1a8754";
+
         form.reset();
         activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
+        openModalError();
         statusMessage.textContent = "❌ เกิดข้อผิดพลาด กรุณาลองใหม่ หรือทักเพจ Mellow.Sundae";
         statusMessage.style.color = "#b00020";
       } finally {
