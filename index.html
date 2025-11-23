@@ -24,13 +24,15 @@
 
       <div id="followers-field">
         <label for="followers">จำนวนผู้ติดตาม</label>
-        <select name="followers">
+        <select name="followers" id="followers">
           <option value="0 คน">0 คน</option>
           <option value="1 คน">1 คน</option>
           <option value="2 คน">2 คน</option>
           <option value="3 คน">3 คน</option>
           <option value="4 คน">4 คน</option>
+          <option value="other">อื่น ๆ โปรดระบุ</option>
         </select>
+        <input type="number" name="other_followers" id="other_followers_input" min="1" style="display: none;" placeholder="ระบุจำนวน">
       </div>
 
       <label for="ig">IG</label>
@@ -95,6 +97,20 @@
     const followersField  = document.getElementById("followers-field");
     if (allowFollowers === "no" || allowFollowers === "false" || allowFollowers === "off") {
       followersField.innerHTML = '<p style="color:#a55">⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม</p>';
+    } else {
+      const followersSelect = document.getElementById("followers");
+      const otherFollowersInput = document.getElementById("other_followers_input");
+
+      followersSelect.addEventListener("change", function() {
+        if (followersSelect.value === "other") {
+          otherFollowersInput.style.display = "block";
+          otherFollowersInput.required = true;
+        } else {
+          otherFollowersInput.style.display = "none";
+          otherFollowersInput.required = false;
+          otherFollowersInput.value = "";
+        }
+      });
     }
 
     // ===== Form + Modal =====
@@ -150,6 +166,14 @@
       openModalLoading();
 
       const formData = new FormData(form);
+      if (formData.get('followers') === 'other') {
+        const otherFollowers = formData.get('other_followers');
+        if (otherFollowers) {
+          formData.set('followers', otherFollowers + ' คน');
+        }
+        formData.delete('other_followers');
+      }
+      
       const body     = new URLSearchParams(formData);
 
       try {
@@ -165,6 +189,12 @@
 
         form.reset();
         activityInput.value = activityFromUrl || "Mellow.Sundae Weekly Activity";
+        // After reset, ensure the 'other' input is hidden again if it was shown
+        const followersSelect = document.getElementById("followers");
+        if(followersSelect.value !== 'other') {
+          document.getElementById('other_followers_input').style.display = 'none';
+        }
+
       } catch (err) {
         console.error(err);
         openModalError();
