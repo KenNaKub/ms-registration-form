@@ -303,3 +303,26 @@ button:disabled {
   margin-top: 1rem;
   font-size: 0.9rem;
 }
+
+.questionnaire-area {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  border-radius: 8px;
+}
+
+.questionnaire-area h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  text-align: left;
+}
+
+.questionnaire-area label {
+  font-weight: bold;
+  margin-top: 1rem;
+}
+
+.questionnaire-area div {
+  margin-top: 0.5rem;
+}
