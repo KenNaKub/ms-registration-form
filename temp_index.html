@@ -44,6 +44,49 @@
         <option value="เคยมาแล้ว">เคยมาแล้ว</option>
       </select>
 
+      <label for="pace">Pace ที่ต้องการวิ่ง</label>
+      <select name="pace">
+        <option value="6-30">06:30</option>
+        <option value="7-30">07:30</option>
+        <option value="8-30">08:30</option>
+      </select>
+
+      <label for="plus_one">ท่านต้องการพา +1 (เพื่อนสนิท คนรู้ใจ) มาร่วมกิจกรรมด้วยหรือไม่</label>
+      <select name="plus_one">
+        <option value="ไม่ต้องการ">ไม่ต้องการ</option>
+        <option value="ต้องการ">ต้องการ</option>
+      </select>
+
+      <div class="questionnaire-area">
+        <h2>แบบสอบถามเพิ่มเติมจากทาง glowie</h2>
+
+        <label>ช่วงอายุของท่าน</label>
+        <div><input type="radio" name="age_range" value="15-18"> 15–18 ปี</div>
+        <div><input type="radio" name="age_range" value="19-22"> 19–22 ปี</div>
+        <div><input type="radio" name="age_range" value="23-30"> 23–30 ปี</div>
+        <div><input type="radio" name="age_range" value="30+"> 30 ปีขึ้นไป</div>
+
+        <label>ท่านรู้จัก Glowié หรือไม่ และจากช่องทางใด</label>
+        <div><input type="radio" name="know_glowie" value="social"> โซเชียลมีเดีย (Instagram, TikTok)</div>
+        <div><input type="radio" name="know_glowie" value="friend"> เพื่อนหรือคนรู้จัก</div>
+        <div><input type="radio" name="know_glowie" value="influencer"> Influencer / Content Creators</div>
+        <div><input type="radio" name="know_glowie" value="marketplace"> มาร์เก็ตเพลส (เช่น Shopee, Lazada)</div>
+        <div><input type="radio" name="know_glowie" value="no"> ไม่รู้จักมาก่อน</div>
+        <label>ปกติคุณทาลิปโทนสีอะไร</label>
+        <div><input type="radio" name="lip_tone" value="pink"> โทนชมพู</div>
+        <div><input type="radio" name="lip_tone" value="orange-peach"> โทนส้ม-พีช</div>
+        <div><input type="radio" name="lip_tone" value="red"> โทนแดง</div>
+        <div><input type="radio" name="lip_tone" value="nude-brown"> โทนนู้ด-น้ำตาล</div>
+
+        <label>เครื่องสำอางชนิดไหนที่คุณซื้อบ่อยที่สุด (เลือกได้สูงสุด 2 ข้อ)</label>
+        <div><input type="checkbox" name="cosmetic_freq" value="lip"> Lipstick / Lip tint / Lip Balm / Lip oil / Lip Gloss</div>
+        <div><input type="checkbox" name="cosmetic_freq" value="cheek"> Cheek/Blush</div>
+        <div><input type="checkbox" name="cosmetic_freq" value="foundation"> Foundation/Skin Tint/concealer</div>
+        <div><input type="checkbox" name="cosmetic_freq" value="eye"> Eye Makeup / Eye liners</div>
+        <div><input type="checkbox" name="cosmetic_freq" value="brows"> Lashes & Brows</div>
+        <div><input type="checkbox" name="cosmetic_freq" value="contour"> Contouring / Highlighter</div>
+      </div>
+
       <button type="submit" id="submitBtn">ส่งข้อมูล</button>
       <p id="statusMessage"></p>
     </form>
