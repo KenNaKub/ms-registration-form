@@ -44,6 +44,36 @@
         <option value="เคยมาแล้ว">เคยมาแล้ว</option>
       </select>
 
+
+      <label for="pace">Pace ที่สามารถวิ่งได้</label>
+      <select name="pace">
+        <option value="6-30">06:30</option>
+        <option value="7-30">07:30</option>
+        <option value="8-30">08:30</option>
+      </select>
+
+      <div class="questionnaire-area">
+        <h2>แบบสอบถามเพิ่มเติมจากทางแบรนด์ Suunto</h2>
+
+        <label>คุณรู้จักแบรนด์ Suunto มาก่อนหรือไม่</label>
+        <div><input type="radio" name="suunto_ack" value="yes"> รู้จัก</div>
+        <div><input type="radio" name="suunto_ack" value="no"> ไม่รู้จัก</div>
+
+        <label>คุณเคยใช้ผลิตภัณฑ์ Suunto ในหมวดหมู่ไหนบ้าง (ตอบได้มากกว่า 1 ข้อ)</label>
+        <div><input type="checkbox" name="suunto_usage" value="watch"> นาฬิกา</div>
+        <div><input type="checkbox" name="suunto_usage" value="headphones"> หูฟัง</div>
+
+        <label>ปกติคุณใช้หูฟฟังระหว่างทำกิจกรรมใดบ้าง (ตอบได้มากกว่า 1 ข้อ)</label>
+        <div><input type="checkbox" name="usage_activity" value="running"> วิ่ง</div>
+        <div><input type="checkbox" name="usage_activity" value="gym"> ฟิตเนส/ออกกำลังกาย</div>
+        <div><input type="checkbox" name="usage_activity" value="bike"> ปั่นจักรยาน</div>
+        <div><input type="checkbox" name="usage_activity" value="trail/hiking"> เดินป่า/เทรล</div>
+        <div><input type="checkbox" name="usage_activity" value="daily"> ใช้ในชีวิตประจำวัน</div>
+        <div><input type="checkbox" name="usage_activity" value="other" id="other_activity_checkbox"> อื่น ๆ โปรดระบุ</div>
+        <input type="text" name="other_activity" id="other_activity_input" style="display: none; margin-top: 5px;" placeholder="โปรดระบุ">
+
+      </div>
+
       <button type="submit" id="submitBtn">ส่งข้อมูล</button>
       <p id="statusMessage"></p>
     </form>
@@ -106,6 +136,20 @@
         }
       });
     }
+
+    // Toggle 'Other' field for Questionnaire
+    const otherActivityCheckbox = document.getElementById("other_activity_checkbox");
+    const otherActivityInput = document.getElementById("other_activity_input");
+    otherActivityCheckbox.addEventListener("change", function() {
+      if (this.checked) {
+        otherActivityInput.style.display = "block";
+        otherActivityInput.required = true;
+      } else {
+        otherActivityInput.style.display = "none";
+        otherActivityInput.required = false;
+        otherActivityInput.value = "";
+      }
+    });
 
     // ===== Form + Modal =====
     const form          = document.getElementById("regForm");
@@ -174,11 +218,28 @@
         formData.delete('other_followers');
       }
       
-      // Handle multiple selections for 'cosmetic_freq'
-      const cosmeticChoices = formData.getAll('cosmetic_freq');
-      if (cosmeticChoices.length > 0) {
-        formData.set('cosmetic_freq', cosmeticChoices.join(', '));
+      // Handle multiple selections for 'suunto_usage'
+      let suuntoChoices = formData.getAll('suunto_usage');
+      if (suuntoChoices.includes('other')) {
+        const otherText = formData.get('other_suunto');
+        suuntoChoices = suuntoChoices.map(c => c === 'other' ? (otherText || 'อื่น ๆ') : c);
       }
+      if (suuntoChoices.length > 0) {
+        formData.set('suunto_usage', suuntoChoices.join(', '));
+      }
+      formData.delete('other_suunto');
+      
+      // Handle multiple selections for 'usage_activity'
+      let usageChoices = formData.getAll('usage_activity');
+      if (usageChoices.includes('other')) {
+        const otherText = formData.get('other_activity');
+        usageChoices = usageChoices.map(c => c === 'other' ? (otherText || 'อื่น ๆ') : c);
+      }
+      if (usageChoices.length > 0) {
+        formData.set('usage_activity', usageChoices.join(', '));
+      }
+      formData.delete('other_activity');
+
 
       const body     = new URLSearchParams(formData);
 
@@ -209,6 +270,8 @@
               document.getElementById('other_followers_input').style.display = 'none';
             }
         }
+        // Reset "Other" field visibility
+        otherActivityInput.style.display = 'none';
 
         submitBtn.disabled = false;
         submitBtn.innerText = "ส่งข้อมูล";
