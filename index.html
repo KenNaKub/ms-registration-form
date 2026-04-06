@@ -52,6 +52,13 @@
         <option value="8-30">08:30</option>
       </select>
 
+      <label for="suunto_owner">ท่านสะดวกนำนาฬิกา Suunto มาร่วมในกิจกรรมนี้หรือไม่</label>
+      <select name="suunto_owner" id="suunto_owner">
+        <option value="no">ไม่สะดวก (ทางแบรนด์มีให้ยืมในจำนวนจำกัด)</option>
+        <option value="yes">สะดวก</option>
+      </select>
+      <input type="text" name="suunto_model" id="suunto_model_input" style="display: none; margin-top: 5px;" placeholder="โปรดระบุรุ่น Suunto ที่คุณใช้">
+
       <div class="questionnaire-area">
         <h2>แบบสอบถามเพิ่มเติมจากทางแบรนด์ Suunto</h2>
 
@@ -148,6 +155,20 @@
         otherActivityInput.style.display = "none";
         otherActivityInput.required = false;
         otherActivityInput.value = "";
+      }
+    });
+
+    // Toggle Suunto Model field
+    const suuntoOwnerSelect = document.getElementById("suunto_owner");
+    const suuntoModelInput = document.getElementById("suunto_model_input");
+    suuntoOwnerSelect.addEventListener("change", function() {
+      if (suuntoOwnerSelect.value === "yes") {
+        suuntoModelInput.style.display = "block";
+        suuntoModelInput.required = true;
+      } else {
+        suuntoModelInput.style.display = "none";
+        suuntoModelInput.required = false;
+        suuntoModelInput.value = "";
       }
     });
 
@@ -272,6 +293,7 @@
         }
         // Reset "Other" field visibility
         otherActivityInput.style.display = 'none';
+        suuntoModelInput.style.display = 'none';
 
         submitBtn.disabled = false;
         submitBtn.innerText = "ส่งข้อมูล";
