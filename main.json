@@ -1,0 +1,54 @@
+{
+  "title": "Mellow.Sundae",
+  "subtitle": "แบบฟอร์มลงทะเบียนเข้าร่วมงาน",
+  "questions": [
+    {
+      "name": "activity",
+      "label": "ชื่อกิจกรรม",
+      "type": "text",
+      "readonly": true
+    },
+    {
+      "name": "fullname",
+      "label": "ชื่อ-นามสกุล *",
+      "type": "text",
+      "required": true,
+      "placeholder": "เช่น เมลโล่ ซันเดย์"
+    },
+    {
+      "name": "phone",
+      "label": "เบอร์โทรศัพท์ *",
+      "type": "tel",
+      "required": true,
+      "placeholder": "เช่น 0823456789"
+    },
+    {
+      "name": "followers",
+      "label": "จำนวนผู้ติดตาม",
+      "type": "select",
+      "options": ["0 คน", "1 คน", "2 คน", "3 คน", "4 คน", "other"]
+    },
+    {
+      "name": "ig",
+      "label": "instagram account",
+      "type": "text",
+      "placeholder": "เช่น @mellow.sundae"
+    },
+    {
+      "name": "first_time",
+      "label": "เคยมาร่วม Mellow.Sundae มาก่อนรึเปล่า?",
+      "type": "select",
+      "options": ["มาครั้งแรก", "เคยมาแล้ว"]
+    },
+    {
+      "name": "pace",
+      "label": "Pace ที่สามารถวิ่งได้",
+      "type": "select",
+      "options": [
+        {"value": "6-30", "label": "06:30"},
+        {"value": "7-30", "label": "07:30"},
+        {"value": "8-30", "label": "08:30"}
+      ]
+    }
+  ]
+}
