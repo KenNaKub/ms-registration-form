@@ -1,48 +1,23 @@
 {
-  "title": "แบบสอบถามเพิ่มเติมจากทางแบรนด์ Glowié",
+  "title": "แบบสอบถามเพิ่มเติมจากทางแบรนด์ Rocket Stride",
   "questions": [
     {
-      "name": "age_range",
-      "label": "ช่วงอายุของท่าน",
-      "type": "radio",
-      "options": ["15–18 ปี", "19–22 ปี", "23–30 ปี", "30 ปีขึ้นไป"]
+      "name": "rocket_stride_awareness",
+      "label": "รู้จักเเบรนด์ Rocket Stride มาก่อนมั้ย ถ้ารู้จัก รู้จักได้ยังไง *",
+      "type": "text",
+      "required": true
     },
     {
-      "name": "glowie_ack",
-      "label": "ท่านรู้จัก Glowié หรือไม่ และจากช่องทางใด",
-      "type": "radio",
-      "options": [
-        "โซเชียลมีเดีย (Instagram, TikTok)",
-        "เพื่อนหรือคนรู้จัก",
-        "Influencer / Content Creators",
-        "มาร์เก็ตเพลส (เช่น Shopee, Lazada)",
-        "ไม่รู้จักมาก่อน",
-        "other"
-      ]
+      "name": "preferred_sock_color",
+      "label": "ถ้าไม่นับสีขาวเเละสีดำ สีที่อยากเห็นในถุงเท้าวิ่งมากที่สุด คือสีไหน *",
+      "type": "text",
+      "required": true
     },
     {
-      "name": "lip_tone",
-      "label": "ปกติคุณทาลิปโทนสีอะไร",
-      "type": "checkbox",
-      "options": [
-        "โทนชมพู",
-        "โทนส้ม-พีช",
-        "โทนแดง",
-        "โทนนู้ด-น้ำตาล"
-      ]
-    },
-    {
-      "name": "makeup_type",
-      "label": "เครื่องสำอางชนิดไหนที่คุณซื้อบ่อยที่สุด (เลือกได้สูงสุด 2 ข้อ)",
-      "type": "checkbox",
-      "options": [
-        "Lipstick / Lip tint / Lip Balm / Lip oil / Lip Gloss",
-        "Cheek/Blush",
-        "Foundation/Skin Tint/concealer",
-        "Eye Makeup / Eye liners",
-        "Lashes & Brows",
-        "Contouring / Highlighter"
-      ]
+      "name": "preferred_sock_pattern",
+      "label": "ถ้าเลือกได้ คุณอยากเห็นลวดลายแบบไหนในถุงเท้าวิ่ง *",
+      "type": "text",
+      "required": true
     }
   ]
 }

@@ -1,4 +1,4 @@
 {
-  "isRegistrationOpen": false,
-  "enableQuestionnaire": false
+  "isRegistrationOpen": true,
+  "enableQuestionnaire": true
 }
