@@ -49,6 +49,12 @@
         {"value": "7-30", "label": "07:30"},
         {"value": "8-30", "label": "08:30"}
       ]
+    },
+    {
+      "name": "socks_size",
+      "label": "ขนาดถุงเท้าที่ต้องการ",
+      "type": "select",
+      "options": ["S", "M"]
     }
   ]
 }
