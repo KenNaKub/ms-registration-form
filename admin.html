@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>จัดการ config ลงทะเบียน</title>
+  <link href="styles.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f0f0f0;
+    }
+    .link-generator-container {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-top: 2rem;
+    }
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    .checkbox-container input {
+      width: auto;
+      margin-right: 0.5rem;
+    }
+    .admin-actions {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: 1fr 1fr;
+      margin-top: 1.5rem;
+    }
+    .admin-actions button {
+      margin-top: 0;
+    }
+    .status {
+      margin-top: 1rem;
+      min-height: 1.5rem;
+    }
+    .status.success {
+      color: #1a8754;
+    }
+    .status.error {
+      color: #b42318;
+    }
+    @media (max-width: 640px) {
+      .admin-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Mellow.Sundae</h2>
+    <div class="link-generator-container">
+      <h3>จัดการ config ลงทะเบียน</h3>
+
+      <label for="adminToken">Admin token</label>
+      <input type="password" id="adminToken" placeholder="Token from Apps Script properties">
+
+      <label for="eventName">ชื่อกิจกรรม</label>
+      <input type="text" id="eventName" placeholder="เช่น Mellow.Sundae Weekly Run">
+
+      <div class="checkbox-container">
+        <input type="checkbox" id="allowFollowers" checked>
+        <label for="allowFollowers">Allow followers</label>
+      </div>
+
+      <div class="checkbox-container">
+        <input type="checkbox" id="isRegistrationOpen" checked>
+        <label for="isRegistrationOpen">Open registration</label>
+      </div>
+
+      <div class="checkbox-container">
+        <input type="checkbox" id="enableQuestionnaire" checked>
+        <label for="enableQuestionnaire">Enable questionnaire</label>
+      </div>
+
+      <div class="admin-actions">
+        <button id="reloadConfigBtn" type="button">โหลด config ล่าสุด</button>
+        <button id="saveConfigBtn" type="button">บันทึก config</button>
+      </div>
+
+      <div id="statusMessage" class="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkdmsZV7LC0IcpYmXXVm242QMZm5tDAbtfoHpTHKdQ0rScoJtPysB8MAQe-G1h_DGy/exec";
+    const DEFAULT_CONFIG = {
+      isRegistrationOpen: true,
+      enableQuestionnaire: true,
+      eventName: "Mellow.Sundae Weekly Activity",
+      allowFollowers: true
+    };
+
+    const adminTokenInput = document.getElementById("adminToken");
+    const eventNameInput = document.getElementById("eventName");
+    const allowFollowersCheckbox = document.getElementById("allowFollowers");
+    const isRegistrationOpenCheckbox = document.getElementById("isRegistrationOpen");
+    const enableQuestionnaireCheckbox = document.getElementById("enableQuestionnaire");
+    const reloadConfigBtn = document.getElementById("reloadConfigBtn");
+    const saveConfigBtn = document.getElementById("saveConfigBtn");
+    const statusMessage = document.getElementById("statusMessage");
+
+    function setStatus(message, type) {
+      statusMessage.textContent = message;
+      statusMessage.className = `status ${type || ""}`;
+    }
+
+    function loadRemoteConfig() {
+      return new Promise((resolve, reject) => {
+        const callbackName = `msAdminConfigCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const script = document.createElement("script");
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          reject(new Error("Timed out while loading config"));
+        }, 5000);
+
+        function cleanup() {
+          window.clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+        }
+
+        window[callbackName] = function (config) {
+          cleanup();
+          resolve(config);
+        };
+
+        script.onerror = function () {
+          cleanup();
+          reject(new Error("Could not load config"));
+        };
+
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set("action", "get_config");
+        url.searchParams.set("callback", callbackName);
+        url.searchParams.set("t", Date.now().toString());
+        script.src = url.href;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function loadLocalConfig() {
+      const configRes = await fetch("config.json");
+      return configRes.json();
+    }
+
+    async function loadConfig() {
+      const localConfig = await loadLocalConfig().catch(() => ({}));
+
+      try {
+        const remoteConfig = await loadRemoteConfig();
+        return { ...DEFAULT_CONFIG, ...localConfig, ...remoteConfig };
+      } catch (err) {
+        console.warn("Using local config fallback:", err);
+        return { ...DEFAULT_CONFIG, ...localConfig };
+      }
+    }
+
+    function renderConfig(config) {
+      eventNameInput.value = config.eventName || "";
+      allowFollowersCheckbox.checked = config.allowFollowers !== false;
+      isRegistrationOpenCheckbox.checked = config.isRegistrationOpen !== false;
+      enableQuestionnaireCheckbox.checked = config.enableQuestionnaire !== false;
+    }
+
+    function collectConfig() {
+      return {
+        isRegistrationOpen: isRegistrationOpenCheckbox.checked,
+        enableQuestionnaire: enableQuestionnaireCheckbox.checked,
+        eventName: eventNameInput.value.trim(),
+        allowFollowers: allowFollowersCheckbox.checked
+      };
+    }
+
+    async function refreshConfig() {
+      setStatus("กำลังโหลด config...", "");
+      const config = await loadConfig();
+      renderConfig(config);
+      setStatus("โหลด config แล้ว", "success");
+    }
+
+    async function saveConfig() {
+      const config = collectConfig();
+      const adminToken = adminTokenInput.value.trim();
+
+      if (!adminToken) {
+        setStatus("กรุณาใส่ admin token", "error");
+        return;
+      }
+
+      if (!config.eventName) {
+        setStatus("กรุณาใส่ชื่อกิจกรรม", "error");
+        return;
+      }
+
+      saveConfigBtn.disabled = true;
+      setStatus("กำลังบันทึก config...", "");
+
+      const payload = new URLSearchParams();
+      payload.set("action", "save_config");
+      payload.set("adminToken", adminToken);
+      payload.set("config", JSON.stringify(config));
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: payload
+        });
+        setStatus("ส่งคำขอบันทึกแล้ว ลองกดโหลด config ล่าสุดอีกครั้งในไม่กี่วินาที", "success");
+      } catch (err) {
+        console.error(err);
+        setStatus("บันทึกไม่สำเร็จ กรุณาลองใหม่", "error");
+      } finally {
+        saveConfigBtn.disabled = false;
+      }
+    }
+
+    reloadConfigBtn.addEventListener("click", refreshConfig);
+    saveConfigBtn.addEventListener("click", saveConfig);
+
+    refreshConfig().catch((err) => {
+      console.error(err);
+      renderConfig(DEFAULT_CONFIG);
+      setStatus("โหลด remote config ไม่สำเร็จ ใช้ค่าเริ่มต้นแทน", "error");
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,6 @@
 {
   "isRegistrationOpen": true,
-  "enableQuestionnaire": true
+  "enableQuestionnaire": true,
+  "eventName": "Mellow.Sundae Weekly Activity",
+  "allowFollowers": true
 }
