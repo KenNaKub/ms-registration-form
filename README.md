@@ -17,4 +17,12 @@ To enable editing from `admin.html`:
 4. Deploy the Apps Script as a web app.
 5. Open `admin.html`, enter the same admin token, edit the config, and save.
 
-Registrations are stored in the existing `formData` sheet. Editable config is stored in a sheet named `Config` with `key` and `value` columns.
+Registrations are stored in the existing `formData` sheet.
+
+Editable admin data is stored in these tabs:
+
+- `Config`: event settings and form titles
+- `MainQuestions`: main registration questions
+- `QuestionnaireQuestions`: additional questionnaire questions
+
+The admin page can load the default examples from `config.json`, `main.json`, and `questionnaire.json`, then save them into the spreadsheet tabs.

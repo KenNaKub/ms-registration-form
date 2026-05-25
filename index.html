@@ -53,7 +53,7 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkdmsZV7LC0IcpYmXXVm242QMZm5tDAbtfoHpTHKdQ0rScoJtPysB8MAQe-G1h_DGy/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-Kw2OqNsTIdunEWXowvdHvfPnzeXB9yKyq6Sb3w6HweStmMcFvJc-yZOC33E-PCT0/exec";
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
       enableQuestionnaire: true,
@@ -111,13 +111,27 @@
 
     modalCloseBtn.addEventListener("click", closeModal);
 
-    function loadRemoteConfig() {
+    async function loadLocalFormDefinition() {
+      const [configRes, mainRes, questionnaireRes] = await Promise.all([
+        fetch("config.json"),
+        fetch("main.json"),
+        fetch("questionnaire.json")
+      ]);
+
+      return {
+        config: await configRes.json(),
+        main: await mainRes.json(),
+        questionnaire: await questionnaireRes.json()
+      };
+    }
+
+    function loadRemoteFormDefinition() {
       return new Promise((resolve, reject) => {
-        const callbackName = `msConfigCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const callbackName = `msFormCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
         const script = document.createElement("script");
         const timeout = window.setTimeout(() => {
           cleanup();
-          reject(new Error("Timed out while loading remote config"));
+          reject(new Error("Timed out while loading remote form definition"));
         }, 5000);
 
         function cleanup() {
@@ -126,18 +140,18 @@
           script.remove();
         }
 
-        window[callbackName] = function (config) {
+        window[callbackName] = function (definition) {
           cleanup();
-          resolve(config);
+          resolve(definition);
         };
 
         script.onerror = function () {
           cleanup();
-          reject(new Error("Could not load remote config"));
+          reject(new Error("Could not load remote form definition"));
         };
 
         const url = new URL(WEB_APP_URL);
-        url.searchParams.set("action", "get_config");
+        url.searchParams.set("action", "get_form_definition");
         url.searchParams.set("callback", callbackName);
         url.searchParams.set("t", Date.now().toString());
         script.src = url.href;
@@ -145,20 +159,43 @@
       });
     }
 
-    async function loadLocalConfig() {
-      const configRes = await fetch("config.json");
-      return configRes.json();
+    function mergeFormDefinition(localDefinition, remoteDefinition) {
+      const localConfig = localDefinition.config || {};
+      const remoteConfig = remoteDefinition.config || {};
+      const remoteMain = remoteDefinition.main || {};
+      const remoteQuestionnaire = remoteDefinition.questionnaire || {};
+
+      return {
+        config: { ...DEFAULT_CONFIG, ...localConfig, ...remoteConfig },
+        main: {
+          ...localDefinition.main,
+          ...remoteMain,
+          title: remoteMain.title || localDefinition.main.title,
+          subtitle: remoteMain.subtitle || localDefinition.main.subtitle,
+          questions: remoteMain.questions && remoteMain.questions.length
+            ? remoteMain.questions
+            : localDefinition.main.questions
+        },
+        questionnaire: {
+          ...localDefinition.questionnaire,
+          ...remoteQuestionnaire,
+          title: remoteQuestionnaire.title || localDefinition.questionnaire.title,
+          questions: remoteQuestionnaire.questions && remoteQuestionnaire.questions.length
+            ? remoteQuestionnaire.questions
+            : localDefinition.questionnaire.questions
+        }
+      };
     }
 
-    async function loadConfig() {
-      const localConfig = await loadLocalConfig().catch(() => ({}));
+    async function loadFormDefinition() {
+      const localDefinition = await loadLocalFormDefinition();
 
       try {
-        const remoteConfig = await loadRemoteConfig();
-        return { ...DEFAULT_CONFIG, ...localConfig, ...remoteConfig };
+        const remoteDefinition = await loadRemoteFormDefinition();
+        return mergeFormDefinition(localDefinition, remoteDefinition || {});
       } catch (err) {
-        console.warn("Using local config fallback:", err);
-        return { ...DEFAULT_CONFIG, ...localConfig };
+        console.warn("Using local form definition fallback:", err);
+        return mergeFormDefinition(localDefinition, {});
       }
     }
 
@@ -309,7 +346,8 @@
 
     async function init() {
       try {
-        const config = await loadConfig();
+        const definition = await loadFormDefinition();
+        const config = definition.config;
         
         if (!config.isRegistrationOpen) {
           loading.style.display = "none";
@@ -317,8 +355,7 @@
           return;
         }
 
-        const mainRes = await fetch("main.json");
-        const mainData = await mainRes.json();
+        const mainData = definition.main;
 
         if (mainData.title) eventTitle.textContent = mainData.title;
         if (mainData.subtitle) eventSubtitle.textContent = mainData.subtitle;
@@ -326,8 +363,7 @@
         mainData.questions.forEach(q => generateField(q, mainFields, config));
 
         if (config.enableQuestionnaire) {
-          const qRes = await fetch("questionnaire.json");
-          const qData = await qRes.json();
+          const qData = definition.questionnaire;
           if (qData.title) questionnaireTitle.textContent = qData.title;
           qData.questions.forEach(q => generateField(q, questionnaireFields, config));
           questionnaireArea.style.display = "block";

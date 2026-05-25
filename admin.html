@@ -3,37 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>จัดการ config ลงทะเบียน</title>
+  <title>จัดการฟอร์มลงทะเบียน</title>
   <link href="styles.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
       background-color: #f0f0f0;
     }
-    .link-generator-container {
+    .admin-panel {
       background-color: #fff;
-      padding: 2rem;
+      padding: 1.5rem;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-top: 2rem;
+      margin-top: 1.25rem;
+    }
+    .admin-section {
+      border-top: 1px solid #eadbd0;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+    }
+    .admin-section:first-of-type {
+      border-top: 0;
+      margin-top: 0;
+      padding-top: 0;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 1rem;
     }
     .checkbox-container {
       display: flex;
       align-items: center;
+      gap: 0.5rem;
       margin-top: 1rem;
     }
     .checkbox-container input {
       width: auto;
-      margin-right: 0.5rem;
+      margin: 0;
     }
-    .admin-actions {
-      display: grid;
+    .checkbox-container label {
+      margin-top: 0;
+    }
+    .question-card {
+      border: 1px solid #eadbd0;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+      background: #fffaf5;
+    }
+    .question-card-header {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .question-card h4 {
+      margin: 0;
+      color: var(--color-text);
+    }
+    .question-tools {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .question-tools button,
+    .admin-actions button,
+    .section-actions button {
+      margin-top: 0;
+      width: auto;
+    }
+    .question-options {
+      min-height: 5rem;
+      resize: vertical;
+      width: 100%;
+      padding: 0.6rem;
+      font: inherit;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      margin-top: var(--spacing-xs);
+    }
+    .admin-actions,
+    .section-actions {
+      display: flex;
       gap: 0.75rem;
-      grid-template-columns: 1fr 1fr;
+      flex-wrap: wrap;
       margin-top: 1.5rem;
     }
-    .admin-actions button {
-      margin-top: 0;
+    .danger {
+      background-color: #b42318;
+    }
+    .danger:hover:not(:disabled) {
+      background-color: #8f1d14;
+    }
+    .secondary {
+      background-color: #7a6555;
+    }
+    .secondary:hover:not(:disabled) {
+      background-color: #634f41;
     }
     .status {
       margin-top: 1rem;
@@ -46,8 +113,12 @@
       color: #b42318;
     }
     @media (max-width: 640px) {
-      .admin-actions {
+      .field-grid {
         grid-template-columns: 1fr;
+      }
+      .question-card-header {
+        align-items: flex-start;
+        flex-direction: column;
       }
     }
   </style>
@@ -55,33 +126,68 @@
 <body>
   <div class="container">
     <h2>Mellow.Sundae</h2>
-    <div class="link-generator-container">
-      <h3>จัดการ config ลงทะเบียน</h3>
+    <div class="admin-panel">
+      <h3>จัดการฟอร์มลงทะเบียน</h3>
 
-      <label for="adminToken">Admin token</label>
-      <input type="password" id="adminToken" placeholder="Token from Apps Script properties">
+      <div class="admin-section">
+        <label for="adminToken">Admin token</label>
+        <input type="password" id="adminToken" placeholder="Token from Apps Script properties">
 
-      <label for="eventName">ชื่อกิจกรรม</label>
-      <input type="text" id="eventName" placeholder="เช่น Mellow.Sundae Weekly Run">
+        <div class="field-grid">
+          <div>
+            <label for="eventName">ชื่อกิจกรรม</label>
+            <input type="text" id="eventName" placeholder="เช่น Mellow.Sundae Weekly Run">
+          </div>
+          <div>
+            <label for="mainTitle">หัวข้อฟอร์มหลัก</label>
+            <input type="text" id="mainTitle" placeholder="Mellow.Sundae">
+          </div>
+          <div>
+            <label for="mainSubtitle">คำอธิบายฟอร์มหลัก</label>
+            <input type="text" id="mainSubtitle" placeholder="แบบฟอร์มลงทะเบียนเข้าร่วมงาน">
+          </div>
+          <div>
+            <label for="questionnaireTitle">หัวข้อแบบสอบถามเพิ่มเติม</label>
+            <input type="text" id="questionnaireTitle" placeholder="แบบสอบถามเพิ่มเติม">
+          </div>
+        </div>
 
-      <div class="checkbox-container">
-        <input type="checkbox" id="allowFollowers" checked>
-        <label for="allowFollowers">Allow followers</label>
+        <div class="checkbox-container">
+          <input type="checkbox" id="allowFollowers" checked>
+          <label for="allowFollowers">Allow followers</label>
+        </div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="isRegistrationOpen" checked>
+          <label for="isRegistrationOpen">Open registration</label>
+        </div>
+
+        <div class="checkbox-container">
+          <input type="checkbox" id="enableQuestionnaire" checked>
+          <label for="enableQuestionnaire">Enable additional questionnaire</label>
+        </div>
       </div>
 
-      <div class="checkbox-container">
-        <input type="checkbox" id="isRegistrationOpen" checked>
-        <label for="isRegistrationOpen">Open registration</label>
+      <div class="admin-section">
+        <h3>Main Questionnaire</h3>
+        <div id="mainQuestions"></div>
+        <div class="section-actions">
+          <button type="button" id="addMainQuestionBtn">Add main question</button>
+        </div>
       </div>
 
-      <div class="checkbox-container">
-        <input type="checkbox" id="enableQuestionnaire" checked>
-        <label for="enableQuestionnaire">Enable questionnaire</label>
+      <div class="admin-section">
+        <h3>Additional Questionnaire</h3>
+        <div id="additionalQuestions"></div>
+        <div class="section-actions">
+          <button type="button" id="addAdditionalQuestionBtn">Add additional question</button>
+        </div>
       </div>
 
       <div class="admin-actions">
-        <button id="reloadConfigBtn" type="button">โหลด config ล่าสุด</button>
-        <button id="saveConfigBtn" type="button">บันทึก config</button>
+        <button id="reloadConfigBtn" type="button" class="secondary">โหลดข้อมูลล่าสุด</button>
+        <button id="loadDefaultsBtn" type="button" class="secondary">Set to default from repo JSON</button>
+        <button id="saveConfigBtn" type="button">บันทึกทั้งหมด</button>
       </div>
 
       <div id="statusMessage" class="status"></div>
@@ -89,20 +195,30 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkdmsZV7LC0IcpYmXXVm242QMZm5tDAbtfoHpTHKdQ0rScoJtPysB8MAQe-G1h_DGy/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-Kw2OqNsTIdunEWXowvdHvfPnzeXB9yKyq6Sb3w6HweStmMcFvJc-yZOC33E-PCT0/exec";
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
       enableQuestionnaire: true,
       eventName: "Mellow.Sundae Weekly Activity",
       allowFollowers: true
     };
+    const ANSWER_TYPES = ["text", "tel", "number", "email", "select", "radio", "checkbox"];
+    const OPTION_TYPES = ["select", "radio", "checkbox"];
 
     const adminTokenInput = document.getElementById("adminToken");
     const eventNameInput = document.getElementById("eventName");
+    const mainTitleInput = document.getElementById("mainTitle");
+    const mainSubtitleInput = document.getElementById("mainSubtitle");
+    const questionnaireTitleInput = document.getElementById("questionnaireTitle");
     const allowFollowersCheckbox = document.getElementById("allowFollowers");
     const isRegistrationOpenCheckbox = document.getElementById("isRegistrationOpen");
     const enableQuestionnaireCheckbox = document.getElementById("enableQuestionnaire");
+    const mainQuestionsContainer = document.getElementById("mainQuestions");
+    const additionalQuestionsContainer = document.getElementById("additionalQuestions");
+    const addMainQuestionBtn = document.getElementById("addMainQuestionBtn");
+    const addAdditionalQuestionBtn = document.getElementById("addAdditionalQuestionBtn");
     const reloadConfigBtn = document.getElementById("reloadConfigBtn");
+    const loadDefaultsBtn = document.getElementById("loadDefaultsBtn");
     const saveConfigBtn = document.getElementById("saveConfigBtn");
     const statusMessage = document.getElementById("statusMessage");
 
@@ -111,13 +227,27 @@
       statusMessage.className = `status ${type || ""}`;
     }
 
-    function loadRemoteConfig() {
+    async function loadLocalFormDefinition() {
+      const [configRes, mainRes, questionnaireRes] = await Promise.all([
+        fetch("config.json"),
+        fetch("main.json"),
+        fetch("questionnaire.json")
+      ]);
+
+      return {
+        config: await configRes.json(),
+        main: await mainRes.json(),
+        questionnaire: await questionnaireRes.json()
+      };
+    }
+
+    function loadRemoteFormDefinition() {
       return new Promise((resolve, reject) => {
-        const callbackName = `msAdminConfigCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const callbackName = `msAdminFormCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
         const script = document.createElement("script");
         const timeout = window.setTimeout(() => {
           cleanup();
-          reject(new Error("Timed out while loading config"));
+          reject(new Error("Timed out while loading form definition"));
         }, 5000);
 
         function cleanup() {
@@ -126,18 +256,18 @@
           script.remove();
         }
 
-        window[callbackName] = function (config) {
+        window[callbackName] = function (definition) {
           cleanup();
-          resolve(config);
+          resolve(definition);
         };
 
         script.onerror = function () {
           cleanup();
-          reject(new Error("Could not load config"));
+          reject(new Error("Could not load form definition"));
         };
 
         const url = new URL(WEB_APP_URL);
-        url.searchParams.set("action", "get_config");
+        url.searchParams.set("action", "get_form_definition");
         url.searchParams.set("callback", callbackName);
         url.searchParams.set("t", Date.now().toString());
         script.src = url.href;
@@ -145,48 +275,312 @@
       });
     }
 
-    async function loadLocalConfig() {
-      const configRes = await fetch("config.json");
-      return configRes.json();
+    function mergeFormDefinition(localDefinition, remoteDefinition) {
+      const localConfig = localDefinition.config || {};
+      const remoteConfig = remoteDefinition.config || {};
+      const remoteMain = remoteDefinition.main || {};
+      const remoteQuestionnaire = remoteDefinition.questionnaire || {};
+
+      return {
+        config: { ...DEFAULT_CONFIG, ...localConfig, ...remoteConfig },
+        main: {
+          ...localDefinition.main,
+          ...remoteMain,
+          title: remoteMain.title || localDefinition.main.title,
+          subtitle: remoteMain.subtitle || localDefinition.main.subtitle,
+          questions: remoteMain.questions && remoteMain.questions.length
+            ? remoteMain.questions
+            : localDefinition.main.questions
+        },
+        questionnaire: {
+          ...localDefinition.questionnaire,
+          ...remoteQuestionnaire,
+          title: remoteQuestionnaire.title || localDefinition.questionnaire.title,
+          questions: remoteQuestionnaire.questions && remoteQuestionnaire.questions.length
+            ? remoteQuestionnaire.questions
+            : localDefinition.questionnaire.questions
+        }
+      };
     }
 
-    async function loadConfig() {
-      const localConfig = await loadLocalConfig().catch(() => ({}));
+    async function loadFormDefinition() {
+      const localDefinition = await loadLocalFormDefinition();
 
       try {
-        const remoteConfig = await loadRemoteConfig();
-        return { ...DEFAULT_CONFIG, ...localConfig, ...remoteConfig };
+        const remoteDefinition = await loadRemoteFormDefinition();
+        return mergeFormDefinition(localDefinition, remoteDefinition || {});
       } catch (err) {
-        console.warn("Using local config fallback:", err);
-        return { ...DEFAULT_CONFIG, ...localConfig };
+        console.warn("Using local form definition fallback:", err);
+        return mergeFormDefinition(localDefinition, {});
       }
     }
 
-    function renderConfig(config) {
+    function renderDefinition(definition) {
+      const config = definition.config || DEFAULT_CONFIG;
+
       eventNameInput.value = config.eventName || "";
       allowFollowersCheckbox.checked = config.allowFollowers !== false;
       isRegistrationOpenCheckbox.checked = config.isRegistrationOpen !== false;
       enableQuestionnaireCheckbox.checked = config.enableQuestionnaire !== false;
+      mainTitleInput.value = definition.main.title || "";
+      mainSubtitleInput.value = definition.main.subtitle || "";
+      questionnaireTitleInput.value = definition.questionnaire.title || "";
+
+      renderQuestions(mainQuestionsContainer, definition.main.questions || []);
+      renderQuestions(additionalQuestionsContainer, definition.questionnaire.questions || []);
     }
 
-    function collectConfig() {
+    function renderQuestions(container, questions) {
+      container.textContent = "";
+      questions.forEach((question) => {
+        container.appendChild(createQuestionCard(question));
+      });
+    }
+
+    function createQuestionCard(question) {
+      const card = document.createElement("div");
+      card.className = "question-card";
+
+      const header = document.createElement("div");
+      header.className = "question-card-header";
+
+      const title = document.createElement("h4");
+      title.textContent = question.label || question.name || "New question";
+      header.appendChild(title);
+
+      const tools = document.createElement("div");
+      tools.className = "question-tools";
+
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "danger";
+      removeBtn.textContent = "Remove";
+      removeBtn.addEventListener("click", () => {
+        card.remove();
+        refreshQuestionNumbers();
+      });
+      tools.appendChild(removeBtn);
+
+      header.appendChild(tools);
+      card.appendChild(header);
+
+      const grid = document.createElement("div");
+      grid.className = "field-grid";
+      grid.appendChild(createTextField("Name", "name", question.name || ""));
+      grid.appendChild(createTextField("Label", "label", question.label || ""));
+      grid.appendChild(createTypeField(question.type || "text"));
+      grid.appendChild(createTextField("Placeholder", "placeholder", question.placeholder || ""));
+      card.appendChild(grid);
+
+      const requiredWrap = createCheckboxField("Required", "required", question.required === true);
+      const readonlyWrap = createCheckboxField("Readonly", "readonly", question.readonly === true);
+      card.appendChild(requiredWrap);
+      card.appendChild(readonlyWrap);
+
+      const optionsWrap = document.createElement("div");
+      optionsWrap.className = "options-wrap";
+      const optionsLabel = document.createElement("label");
+      optionsLabel.textContent = "Options";
+      optionsWrap.appendChild(optionsLabel);
+
+      const optionsTextarea = document.createElement("textarea");
+      optionsTextarea.className = "question-options";
+      optionsTextarea.dataset.field = "options";
+      optionsTextarea.value = formatOptions(question.options || []);
+      optionsWrap.appendChild(optionsTextarea);
+
+      card.appendChild(optionsWrap);
+
+      const typeSelect = card.querySelector('[data-field="type"]');
+      typeSelect.addEventListener("change", () => {
+        updateOptionsVisibility(card);
+      });
+      updateOptionsVisibility(card);
+
+      card.querySelector('[data-field="label"]').addEventListener("input", (event) => {
+        title.textContent = event.target.value || card.querySelector('[data-field="name"]').value || "New question";
+      });
+      card.querySelector('[data-field="name"]').addEventListener("input", (event) => {
+        if (!card.querySelector('[data-field="label"]').value) {
+          title.textContent = event.target.value || "New question";
+        }
+      });
+
+      return card;
+    }
+
+    function createTextField(labelText, fieldName, value) {
+      const wrap = document.createElement("div");
+      const label = document.createElement("label");
+      label.textContent = labelText;
+      wrap.appendChild(label);
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.dataset.field = fieldName;
+      input.value = value;
+      wrap.appendChild(input);
+
+      return wrap;
+    }
+
+    function createTypeField(value) {
+      const wrap = document.createElement("div");
+      const label = document.createElement("label");
+      label.textContent = "Answer type";
+      wrap.appendChild(label);
+
+      const select = document.createElement("select");
+      select.dataset.field = "type";
+      ANSWER_TYPES.forEach((type) => {
+        const option = document.createElement("option");
+        option.value = type;
+        option.textContent = type;
+        select.appendChild(option);
+      });
+      select.value = ANSWER_TYPES.includes(value) ? value : "text";
+      wrap.appendChild(select);
+
+      return wrap;
+    }
+
+    function createCheckboxField(labelText, fieldName, checked) {
+      const wrap = document.createElement("div");
+      wrap.className = "checkbox-container";
+
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.field = fieldName;
+      input.checked = checked;
+      wrap.appendChild(input);
+
+      const label = document.createElement("label");
+      label.textContent = labelText;
+      wrap.appendChild(label);
+
+      return wrap;
+    }
+
+    function updateOptionsVisibility(card) {
+      const type = card.querySelector('[data-field="type"]').value;
+      const optionsWrap = card.querySelector(".options-wrap");
+      optionsWrap.style.display = OPTION_TYPES.includes(type) ? "block" : "none";
+    }
+
+    function formatOptions(options) {
+      return options.map((option) => {
+        if (typeof option === "string") return option;
+        return `${option.value}|${option.label}`;
+      }).join("\n");
+    }
+
+    function parseOptions(value) {
+      return value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          if (!line.includes("|")) return line;
+          const [optionValue, ...labelParts] = line.split("|");
+          return {
+            value: optionValue.trim(),
+            label: labelParts.join("|").trim()
+          };
+        });
+    }
+
+    function collectQuestions(container) {
+      return Array.from(container.querySelectorAll(".question-card")).map((card) => {
+        const question = {
+          name: card.querySelector('[data-field="name"]').value.trim(),
+          label: card.querySelector('[data-field="label"]').value.trim(),
+          type: card.querySelector('[data-field="type"]').value
+        };
+
+        const placeholder = card.querySelector('[data-field="placeholder"]').value.trim();
+        if (placeholder) question.placeholder = placeholder;
+        if (card.querySelector('[data-field="required"]').checked) question.required = true;
+        if (card.querySelector('[data-field="readonly"]').checked) question.readonly = true;
+
+        if (OPTION_TYPES.includes(question.type)) {
+          question.options = parseOptions(card.querySelector('[data-field="options"]').value);
+        }
+
+        return question;
+      });
+    }
+
+    function validateQuestions(questions, sectionName) {
+      const names = new Set();
+
+      for (const question of questions) {
+        if (!question.name || !question.label) {
+          throw new Error(`${sectionName}: every question needs name and label`);
+        }
+        if (!/^[A-Za-z][0-9A-Za-z_]*$/.test(question.name)) {
+          throw new Error(`${sectionName}: "${question.name}" must start with a letter and use only letters, numbers, and underscore`);
+        }
+        if (names.has(question.name)) {
+          throw new Error(`${sectionName}: duplicate question name "${question.name}"`);
+        }
+        names.add(question.name);
+        if (OPTION_TYPES.includes(question.type) && (!question.options || !question.options.length)) {
+          throw new Error(`${sectionName}: "${question.name}" needs at least one option`);
+        }
+      }
+    }
+
+    function collectDefinition() {
+      const mainQuestions = collectQuestions(mainQuestionsContainer);
+      const additionalQuestions = collectQuestions(additionalQuestionsContainer);
+
+      validateQuestions(mainQuestions, "Main questionnaire");
+      validateQuestions(additionalQuestions, "Additional questionnaire");
+
       return {
-        isRegistrationOpen: isRegistrationOpenCheckbox.checked,
-        enableQuestionnaire: enableQuestionnaireCheckbox.checked,
-        eventName: eventNameInput.value.trim(),
-        allowFollowers: allowFollowersCheckbox.checked
+        config: {
+          isRegistrationOpen: isRegistrationOpenCheckbox.checked,
+          enableQuestionnaire: enableQuestionnaireCheckbox.checked,
+          eventName: eventNameInput.value.trim(),
+          allowFollowers: allowFollowersCheckbox.checked
+        },
+        main: {
+          title: mainTitleInput.value.trim(),
+          subtitle: mainSubtitleInput.value.trim(),
+          questions: mainQuestions
+        },
+        questionnaire: {
+          title: questionnaireTitleInput.value.trim(),
+          questions: additionalQuestions
+        }
       };
     }
 
-    async function refreshConfig() {
-      setStatus("กำลังโหลด config...", "");
-      const config = await loadConfig();
-      renderConfig(config);
-      setStatus("โหลด config แล้ว", "success");
+    function refreshQuestionNumbers() {
+      [mainQuestionsContainer, additionalQuestionsContainer].forEach((container) => {
+        container.querySelectorAll(".question-card h4").forEach((heading, index) => {
+          if (!heading.textContent || heading.textContent === "New question") {
+            heading.textContent = `Question ${index + 1}`;
+          }
+        });
+      });
     }
 
-    async function saveConfig() {
-      const config = collectConfig();
+    async function refreshDefinition() {
+      setStatus("กำลังโหลดข้อมูล...", "");
+      const definition = await loadFormDefinition();
+      renderDefinition(definition);
+      setStatus("โหลดข้อมูลแล้ว", "success");
+    }
+
+    async function loadDefaults() {
+      setStatus("กำลังโหลดค่า default จาก repo JSON...", "");
+      const definition = await loadLocalFormDefinition();
+      renderDefinition(mergeFormDefinition(definition, {}));
+      setStatus("โหลดค่า default แล้ว ยังไม่ได้บันทึกลง spreadsheet", "success");
+    }
+
+    async function saveDefinition() {
       const adminToken = adminTokenInput.value.trim();
 
       if (!adminToken) {
@@ -194,18 +588,26 @@
         return;
       }
 
-      if (!config.eventName) {
+      let definition;
+      try {
+        definition = collectDefinition();
+      } catch (err) {
+        setStatus(err.message, "error");
+        return;
+      }
+
+      if (!definition.config.eventName) {
         setStatus("กรุณาใส่ชื่อกิจกรรม", "error");
         return;
       }
 
       saveConfigBtn.disabled = true;
-      setStatus("กำลังบันทึก config...", "");
+      setStatus("กำลังบันทึกข้อมูล...", "");
 
       const payload = new URLSearchParams();
-      payload.set("action", "save_config");
+      payload.set("action", "save_form_definition");
       payload.set("adminToken", adminToken);
-      payload.set("config", JSON.stringify(config));
+      payload.set("definition", JSON.stringify(definition));
 
       try {
         await fetch(WEB_APP_URL, {
@@ -213,7 +615,7 @@
           mode: "no-cors",
           body: payload
         });
-        setStatus("ส่งคำขอบันทึกแล้ว ลองกดโหลด config ล่าสุดอีกครั้งในไม่กี่วินาที", "success");
+        setStatus("ส่งคำขอบันทึกแล้ว ลองกดโหลดข้อมูลล่าสุดอีกครั้งในไม่กี่วินาที", "success");
       } catch (err) {
         console.error(err);
         setStatus("บันทึกไม่สำเร็จ กรุณาลองใหม่", "error");
@@ -222,13 +624,21 @@
       }
     }
 
-    reloadConfigBtn.addEventListener("click", refreshConfig);
-    saveConfigBtn.addEventListener("click", saveConfig);
+    addMainQuestionBtn.addEventListener("click", () => {
+      mainQuestionsContainer.appendChild(createQuestionCard({ type: "text" }));
+      refreshQuestionNumbers();
+    });
+    addAdditionalQuestionBtn.addEventListener("click", () => {
+      additionalQuestionsContainer.appendChild(createQuestionCard({ type: "text" }));
+      refreshQuestionNumbers();
+    });
+    reloadConfigBtn.addEventListener("click", refreshDefinition);
+    loadDefaultsBtn.addEventListener("click", loadDefaults);
+    saveConfigBtn.addEventListener("click", saveDefinition);
 
-    refreshConfig().catch((err) => {
+    refreshDefinition().catch((err) => {
       console.error(err);
-      renderConfig(DEFAULT_CONFIG);
-      setStatus("โหลด remote config ไม่สำเร็จ ใช้ค่าเริ่มต้นแทน", "error");
+      setStatus("โหลดข้อมูลไม่สำเร็จ", "error");
     });
   </script>
 </body>
