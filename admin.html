@@ -283,6 +283,52 @@
       });
     }
 
+    function postToAppsScript(params) {
+      return new Promise((resolve) => {
+        const frameName = `msAdminPostFrame_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const iframe = document.createElement("iframe");
+        iframe.name = frameName;
+        iframe.style.display = "none";
+
+        const form = document.createElement("form");
+        form.action = WEB_APP_URL;
+        form.method = "POST";
+        form.target = frameName;
+        form.style.display = "none";
+
+        Object.keys(params).forEach((key) => {
+          const field = key === "definition"
+            ? document.createElement("textarea")
+            : document.createElement("input");
+          field.name = key;
+          field.value = params[key];
+          form.appendChild(field);
+        });
+
+        const cleanup = () => {
+          window.setTimeout(() => {
+            iframe.remove();
+            form.remove();
+          }, 0);
+        };
+
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          resolve();
+        }, 8000);
+
+        iframe.addEventListener("load", () => {
+          window.clearTimeout(timeout);
+          cleanup();
+          resolve();
+        });
+
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+      });
+    }
+
     function mergeFormDefinition(localDefinition, remoteDefinition) {
       const localConfig = localDefinition.config || {};
       const remoteConfig = remoteDefinition.config || {};
@@ -637,18 +683,14 @@
       setStatus("กำลังบันทึกข้อมูล...", "");
 
       try {
-        const payload = new URLSearchParams();
-        payload.set("action", "save_form_definition");
-        payload.set("adminToken", adminToken);
-        payload.set("definition", JSON.stringify(definition));
-
-        await fetch(WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
-          body: payload
+        await postToAppsScript({
+          action: "save_form_definition",
+          adminToken: adminToken,
+          definition: JSON.stringify(definition)
         });
 
         setStatus("ส่งข้อมูลแล้ว กำลังตรวจสอบ spreadsheet...", "");
+        await new Promise((resolve) => window.setTimeout(resolve, 1500));
 
         const savedDefinition = await loadRemoteFormDefinition();
         if (!definitionsMatch(definition, savedDefinition)) {
