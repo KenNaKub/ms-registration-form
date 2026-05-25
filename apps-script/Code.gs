@@ -23,6 +23,10 @@ function doGet(e) {
     return outputFormDefinition(e);
   }
 
+  if (action === 'save_form_definition') {
+    return outputSaveFormDefinition(e);
+  }
+
   return HtmlService.createHtmlOutputFromFile('form')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -57,7 +61,7 @@ function doPost(e) {
 
   if (action === 'save_form_definition') {
     try {
-      return saveFormDefinition(e);
+      return outputJson(saveFormDefinitionData(e));
     } catch (err) {
       return ContentService.createTextOutput('❌ Error: ' + err.message);
     }
@@ -115,6 +119,16 @@ function outputFormDefinition(e) {
   const callback = e.parameter.callback || '';
 
   return outputJsonp(definition, callback);
+}
+
+function outputSaveFormDefinition(e) {
+  const callback = e.parameter.callback || '';
+
+  try {
+    return outputJsonp(saveFormDefinitionData(e), callback);
+  } catch (err) {
+    return outputJsonp({ ok: false, error: err.message }, callback);
+  }
 }
 
 function outputJsonp(payload, callback) {
@@ -202,7 +216,7 @@ function saveConfig(e) {
   return outputJson({ ok: true, config: safeConfig });
 }
 
-function saveFormDefinition(e) {
+function saveFormDefinitionData(e) {
   assertAdminToken(e.parameter.adminToken || '');
 
   const definition = JSON.parse(e.parameter.definition || '{}');
@@ -231,7 +245,7 @@ function saveFormDefinition(e) {
   saveQuestionsToSheet(MAIN_QUESTIONS_SHEET_NAME, mainQuestions);
   saveQuestionsToSheet(QUESTIONNAIRE_QUESTIONS_SHEET_NAME, questionnaireQuestions);
 
-  return outputJson({
+  return {
     ok: true,
     definition: {
       config: safeConfig,
@@ -245,7 +259,7 @@ function saveFormDefinition(e) {
         questions: questionnaireQuestions
       }
     }
-  });
+  };
 }
 
 function saveConfigValues(config) {
