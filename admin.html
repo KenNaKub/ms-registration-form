@@ -564,6 +564,30 @@
       };
     }
 
+    function normalizeQuestion(question) {
+      return {
+        name: question.name || "",
+        label: question.label || "",
+        type: question.type || "text",
+        required: question.required === true,
+        readonly: question.readonly === true,
+        placeholder: question.placeholder || "",
+        options: JSON.stringify(question.options || [])
+      };
+    }
+
+    function definitionsMatch(expected, actual) {
+      if (!actual || !actual.main || !actual.questionnaire) return false;
+
+      const expectedMain = expected.main.questions.map(normalizeQuestion);
+      const actualMain = (actual.main.questions || []).map(normalizeQuestion);
+      const expectedAdditional = expected.questionnaire.questions.map(normalizeQuestion);
+      const actualAdditional = (actual.questionnaire.questions || []).map(normalizeQuestion);
+
+      return JSON.stringify(expectedMain) === JSON.stringify(actualMain)
+        && JSON.stringify(expectedAdditional) === JSON.stringify(actualAdditional);
+    }
+
     function refreshQuestionNumbers() {
       [mainQuestionsContainer, additionalQuestionsContainer].forEach((container) => {
         container.querySelectorAll(".question-card h4").forEach((heading, index) => {
@@ -612,18 +636,23 @@
       saveConfigBtn.disabled = true;
       setStatus("กำลังบันทึกข้อมูล...", "");
 
-      const serializedDefinition = JSON.stringify(definition);
-
       try {
-        const result = await callAppsScriptJsonp({
-          action: "save_form_definition",
-          adminToken: adminToken,
-          definition: serializedDefinition,
-          t: Date.now().toString()
+        const payload = new URLSearchParams();
+        payload.set("action", "save_form_definition");
+        payload.set("adminToken", adminToken);
+        payload.set("definition", JSON.stringify(definition));
+
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: payload
         });
 
-        if (!result || result.ok !== true) {
-          throw new Error(result && result.error ? result.error : "Apps Script did not confirm the save");
+        setStatus("ส่งข้อมูลแล้ว กำลังตรวจสอบ spreadsheet...", "");
+
+        const savedDefinition = await loadRemoteFormDefinition();
+        if (!definitionsMatch(definition, savedDefinition)) {
+          throw new Error("Spreadsheet did not match the saved questions. Check ADMIN_TOKEN and Apps Script deployment.");
         }
 
         setStatus("บันทึกข้อมูลลง spreadsheet แล้ว", "success");
