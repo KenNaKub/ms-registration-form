@@ -3,7 +3,7 @@ Static website to for registration form that post the input to store in google s
 
 ## Editable config
 
-`index.html` loads config from the Google Apps Script web app using JSONP, then falls back to `config.json` if the remote config cannot be loaded.
+`index.html` loads the live form definition from the Google Apps Script web app using JSONP. If that remote definition cannot be loaded, the public form shows an error instead of falling back to local JSON, so users cannot accidentally submit against stale fields.
 
 The Apps Script in `apps-script/Code.gs` writes to this spreadsheet:
 

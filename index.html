@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>ลงทะเบียน Mellow Sundae</title>
-  <link href="styles.css?v=20260615-5" rel="stylesheet" />
+  <link href="styles.css?v=20260615-7" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -57,7 +57,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-5";
+    const APP_VERSION = "20260615-7";
     const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
@@ -116,21 +116,6 @@
 
     modalCloseBtn.addEventListener("click", closeModal);
 
-    async function loadLocalFormDefinition() {
-      const cacheBust = `${APP_VERSION}-${Date.now()}`;
-      const [configRes, mainRes, questionnaireRes] = await Promise.all([
-        fetch(`config.json?v=${cacheBust}`, { cache: "no-store" }),
-        fetch(`main.json?v=${cacheBust}`, { cache: "no-store" }),
-        fetch(`questionnaire.json?v=${cacheBust}`, { cache: "no-store" })
-      ]);
-
-      return {
-        config: await configRes.json(),
-        main: await mainRes.json(),
-        questionnaire: await questionnaireRes.json()
-      };
-    }
-
     function loadRemoteFormDefinition() {
       return new Promise((resolve, reject) => {
         const callbackName = `msFormCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -165,46 +150,18 @@
       });
     }
 
-    function mergeFormDefinition(localDefinition, remoteDefinition) {
-      const localConfig = localDefinition.config || {};
-      const remoteConfig = remoteDefinition.config || {};
-      const remoteMain = remoteDefinition.main || {};
-      const remoteQuestionnaire = remoteDefinition.questionnaire || {};
-
-      return {
-        config: { ...DEFAULT_CONFIG, ...localConfig, ...remoteConfig },
-        main: {
-          ...localDefinition.main,
-          ...remoteMain,
-          title: remoteMain.title || localDefinition.main.title,
-          subtitle: remoteMain.subtitle || localDefinition.main.subtitle,
-          questions: remoteMain.questions && remoteMain.questions.length
-            ? remoteMain.questions
-            : localDefinition.main.questions
-        },
-        questionnaire: {
-          ...localDefinition.questionnaire,
-          ...remoteQuestionnaire,
-          title: remoteQuestionnaire.title || localDefinition.questionnaire.title,
-          questions: remoteQuestionnaire.questions && remoteQuestionnaire.questions.length
-            ? remoteQuestionnaire.questions
-            : localDefinition.questionnaire.questions
-        }
-      };
-    }
-
-    function validateFormDefinition(definition, sourceName) {
+    function validateRemoteFormDefinition(definition) {
       if (!definition || typeof definition !== "object") {
-        throw new Error(`${sourceName} form definition was empty`);
+        throw new Error("Remote form definition was empty");
       }
       if (!definition.config || !definition.main || !definition.questionnaire) {
-        throw new Error(`${sourceName} form definition is incomplete`);
+        throw new Error("Remote form definition is incomplete");
       }
       if (!Array.isArray(definition.main.questions)) {
-        throw new Error(`${sourceName} main questions are missing`);
+        throw new Error("Remote main questions are missing");
       }
       if (!Array.isArray(definition.questionnaire.questions)) {
-        throw new Error(`${sourceName} questionnaire questions are missing`);
+        throw new Error("Remote questionnaire questions are missing");
       }
 
       return {
@@ -215,28 +172,7 @@
     }
 
     async function loadFormDefinition() {
-      const localDefinitionPromise = loadLocalFormDefinition();
-
-      try {
-        const remoteDefinition = validateFormDefinition(
-          await loadRemoteFormDefinition(),
-          "Remote"
-        );
-
-        try {
-          const localDefinition = validateFormDefinition(
-            await localDefinitionPromise,
-            "Local"
-          );
-          return mergeFormDefinition(localDefinition, remoteDefinition);
-        } catch (localErr) {
-          console.warn("Local form definition could not be loaded; using remote definition only.", localErr);
-          return remoteDefinition;
-        }
-      } catch (remoteErr) {
-        console.warn("Remote form definition could not be loaded; using local fallback.", remoteErr);
-        return validateFormDefinition(await localDefinitionPromise, "Local");
-      }
+      return validateRemoteFormDefinition(await loadRemoteFormDefinition());
     }
 
     // Dynamic field generator
@@ -414,7 +350,7 @@
 
       } catch (err) {
         console.error(err);
-        loading.textContent = "โหลดฟอร์มล่าสุดไม่สำเร็จ กรุณารีเฟรชหน้า หรือลองใหม่อีกครั้ง";
+        loading.textContent = "ไม่สามารถโหลดฟอร์มล่าสุดได้ กรุณารีเฟรชหน้า ปิดส่วนขยายที่บล็อกเว็บไซต์ หรือลองเปิดด้วยเบราว์เซอร์อื่น";
       }
     }
 
