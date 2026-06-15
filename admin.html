@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>จัดการฟอร์มลงทะเบียน</title>
-  <link href="styles.css" rel="stylesheet" />
+  <link href="styles.css?v=20260615-2" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
@@ -195,7 +198,8 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzWQLG3HHLqji6KEQ8hXVX_PrBM5xH9dGOe88d177O8d5zMHNEI3K72O_DXFD7hwrVx/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
+    const APP_VERSION = "20260615-2";
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
       enableQuestionnaire: true,
@@ -228,10 +232,11 @@
     }
 
     async function loadLocalFormDefinition() {
+      const cacheBust = `${APP_VERSION}-${Date.now()}`;
       const [configRes, mainRes, questionnaireRes] = await Promise.all([
-        fetch("config.json"),
-        fetch("main.json"),
-        fetch("questionnaire.json")
+        fetch(`config.json?v=${cacheBust}`, { cache: "no-store" }),
+        fetch(`main.json?v=${cacheBust}`, { cache: "no-store" }),
+        fetch(`questionnaire.json?v=${cacheBust}`, { cache: "no-store" })
       ]);
 
       return {
@@ -622,16 +627,63 @@
       };
     }
 
-    function definitionsMatch(expected, actual) {
-      if (!actual || !actual.main || !actual.questionnaire) return false;
+    function getDefinitionMismatch(expected, actual) {
+      if (!actual || !actual.main || !actual.questionnaire) {
+        return "remote definition was empty";
+      }
 
+      const expectedConfig = {
+        isRegistrationOpen: expected.config.isRegistrationOpen,
+        enableQuestionnaire: expected.config.enableQuestionnaire,
+        eventName: expected.config.eventName,
+        allowFollowers: expected.config.allowFollowers,
+        mainTitle: expected.main.title,
+        mainSubtitle: expected.main.subtitle,
+        questionnaireTitle: expected.questionnaire.title
+      };
+      const actualConfig = {
+        isRegistrationOpen: actual.config.isRegistrationOpen,
+        enableQuestionnaire: actual.config.enableQuestionnaire,
+        eventName: actual.config.eventName,
+        allowFollowers: actual.config.allowFollowers,
+        mainTitle: actual.main.title,
+        mainSubtitle: actual.main.subtitle,
+        questionnaireTitle: actual.questionnaire.title
+      };
       const expectedMain = expected.main.questions.map(normalizeQuestion);
       const actualMain = (actual.main.questions || []).map(normalizeQuestion);
       const expectedAdditional = expected.questionnaire.questions.map(normalizeQuestion);
       const actualAdditional = (actual.questionnaire.questions || []).map(normalizeQuestion);
 
-      return JSON.stringify(expectedMain) === JSON.stringify(actualMain)
-        && JSON.stringify(expectedAdditional) === JSON.stringify(actualAdditional);
+      if (JSON.stringify(expectedConfig) !== JSON.stringify(actualConfig)) {
+        return "event settings or titles did not update";
+      }
+      if (JSON.stringify(expectedMain) !== JSON.stringify(actualMain)) {
+        return `main questions did not update (${actualMain.length}/${expectedMain.length} saved)`;
+      }
+      if (JSON.stringify(expectedAdditional) !== JSON.stringify(actualAdditional)) {
+        return `additional questions did not update (${actualAdditional.length}/${expectedAdditional.length} saved)`;
+      }
+
+      return "";
+    }
+
+    async function waitForSavedDefinition(expectedDefinition) {
+      const deadline = Date.now() + 12000;
+      let lastMismatch = "spreadsheet was not checked";
+
+      while (Date.now() < deadline) {
+        const savedDefinition = await loadRemoteFormDefinition();
+        lastMismatch = getDefinitionMismatch(expectedDefinition, savedDefinition);
+
+        if (!lastMismatch) {
+          return savedDefinition;
+        }
+
+        await new Promise((resolve) => window.setTimeout(resolve, 1500));
+      }
+
+      throw new Error(`Spreadsheet did not match after saving: ${lastMismatch}. Check ADMIN_TOKEN and Apps Script deployment.`);
     }
 
     function refreshQuestionNumbers() {
@@ -690,12 +742,7 @@
         });
 
         setStatus("ส่งข้อมูลแล้ว กำลังตรวจสอบ spreadsheet...", "");
-        await new Promise((resolve) => window.setTimeout(resolve, 1500));
-
-        const savedDefinition = await loadRemoteFormDefinition();
-        if (!definitionsMatch(definition, savedDefinition)) {
-          throw new Error("Spreadsheet did not match the saved questions. Check ADMIN_TOKEN and Apps Script deployment.");
-        }
+        await waitForSavedDefinition(definition);
 
         setStatus("บันทึกข้อมูลลง spreadsheet แล้ว", "success");
       } catch (err) {

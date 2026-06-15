@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>ลงทะเบียน Mellow Sundae</title>
-  <link href="styles.css" rel="stylesheet" />
+  <link href="styles.css?v=20260615-2" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -53,7 +56,8 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzWQLG3HHLqji6KEQ8hXVX_PrBM5xH9dGOe88d177O8d5zMHNEI3K72O_DXFD7hwrVx/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
+    const APP_VERSION = "20260615-2";
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
       enableQuestionnaire: true,
@@ -112,10 +116,11 @@
     modalCloseBtn.addEventListener("click", closeModal);
 
     async function loadLocalFormDefinition() {
+      const cacheBust = `${APP_VERSION}-${Date.now()}`;
       const [configRes, mainRes, questionnaireRes] = await Promise.all([
-        fetch("config.json"),
-        fetch("main.json"),
-        fetch("questionnaire.json")
+        fetch(`config.json?v=${cacheBust}`, { cache: "no-store" }),
+        fetch(`main.json?v=${cacheBust}`, { cache: "no-store" }),
+        fetch(`questionnaire.json?v=${cacheBust}`, { cache: "no-store" })
       ]);
 
       return {

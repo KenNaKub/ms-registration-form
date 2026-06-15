@@ -244,6 +244,7 @@ function saveFormDefinitionData(e) {
   saveConfigValues(safeConfig);
   saveQuestionsToSheet(MAIN_QUESTIONS_SHEET_NAME, mainQuestions);
   saveQuestionsToSheet(QUESTIONNAIRE_QUESTIONS_SHEET_NAME, questionnaireQuestions);
+  SpreadsheetApp.flush();
 
   return {
     ok: true,
