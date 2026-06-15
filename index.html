@@ -193,18 +193,18 @@
       };
     }
 
-    function validateRemoteFormDefinition(definition) {
+    function validateFormDefinition(definition, sourceName) {
       if (!definition || typeof definition !== "object") {
-        throw new Error("Remote form definition was empty");
+        throw new Error(`${sourceName} form definition was empty`);
       }
       if (!definition.config || !definition.main || !definition.questionnaire) {
-        throw new Error("Remote form definition is incomplete");
+        throw new Error(`${sourceName} form definition is incomplete`);
       }
       if (!Array.isArray(definition.main.questions)) {
-        throw new Error("Remote main questions are missing");
+        throw new Error(`${sourceName} main questions are missing`);
       }
       if (!Array.isArray(definition.questionnaire.questions)) {
-        throw new Error("Remote questionnaire questions are missing");
+        throw new Error(`${sourceName} questionnaire questions are missing`);
       }
 
       return {
@@ -215,7 +215,28 @@
     }
 
     async function loadFormDefinition() {
-      return validateRemoteFormDefinition(await loadRemoteFormDefinition());
+      const localDefinitionPromise = loadLocalFormDefinition();
+
+      try {
+        const remoteDefinition = validateFormDefinition(
+          await loadRemoteFormDefinition(),
+          "Remote"
+        );
+
+        try {
+          const localDefinition = validateFormDefinition(
+            await localDefinitionPromise,
+            "Local"
+          );
+          return mergeFormDefinition(localDefinition, remoteDefinition);
+        } catch (localErr) {
+          console.warn("Local form definition could not be loaded; using remote definition only.", localErr);
+          return remoteDefinition;
+        }
+      } catch (remoteErr) {
+        console.warn("Remote form definition could not be loaded; using local fallback.", remoteErr);
+        return validateFormDefinition(await localDefinitionPromise, "Local");
+      }
     }
 
     // Dynamic field generator

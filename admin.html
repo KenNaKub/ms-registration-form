@@ -11,19 +11,83 @@
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
-      background-color: #f0f0f0;
+      background:
+        linear-gradient(90deg, rgba(183, 132, 91, 0.08) 0 1px, transparent 1px 100%),
+        radial-gradient(circle at 14% 10%, rgba(255, 163, 102, 0.24), transparent 28rem),
+        linear-gradient(135deg, #fbf4ec 0%, #f7efe5 48%, #f5f5f2 100%);
+      background-size: 42px 42px, auto, auto;
+      min-height: 100%;
+    }
+    body.admin-page {
+      color: #4f3a2e;
+    }
+    .admin-page .container {
+      max-width: 1180px;
+      width: min(calc(100% - 2rem), 1180px);
+      margin: clamp(1rem, 3vw, 2.5rem) auto;
+      padding: clamp(1rem, 2.4vw, 2rem);
+      background: rgba(255, 250, 245, 0.9);
+      border: 1px solid rgba(218, 190, 166, 0.72);
+      box-shadow: 0 24px 80px rgba(87, 58, 34, 0.14);
+    }
+    .admin-hero {
+      align-items: end;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: minmax(0, 1fr) auto;
+      margin-bottom: 1rem;
+    }
+    .admin-eyebrow {
+      color: #9b623b;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 0.2rem;
+      text-transform: uppercase;
+    }
+    .admin-hero h1 {
+      color: #3f2c23;
+      font-size: clamp(1.7rem, 3vw, 2.8rem);
+      line-height: 1.12;
+      margin: 0;
+    }
+    .admin-hero p {
+      color: #7b6251;
+      margin: 0.45rem 0 0;
+      max-width: 58ch;
+    }
+    .admin-badge {
+      align-items: center;
+      background: #fff;
+      border: 1px solid #ead5c6;
+      border-radius: 999px;
+      color: #6b4f3f;
+      display: inline-flex;
+      font-weight: 800;
+      gap: 0.45rem;
+      min-height: 2.7rem;
+      padding: 0.55rem 0.9rem;
+      white-space: nowrap;
+    }
+    .admin-badge::before {
+      background: #1f9d68;
+      border-radius: 999px;
+      content: "";
+      height: 0.55rem;
+      width: 0.55rem;
     }
     .admin-panel {
-      background-color: #fff;
-      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(234, 219, 208, 0.9);
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 16px 42px rgba(91, 61, 39, 0.1);
       margin-top: 1.25rem;
+      padding: clamp(1rem, 2.5vw, 1.6rem);
     }
     .admin-section {
       border-top: 1px solid #eadbd0;
-      margin-top: 1.5rem;
-      padding-top: 1.5rem;
+      margin-top: clamp(1.2rem, 2vw, 1.75rem);
+      padding-top: clamp(1.2rem, 2vw, 1.75rem);
     }
     .admin-section:first-of-type {
       border-top: 0;
@@ -32,8 +96,25 @@
     }
     .field-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0 1rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem 1rem;
+    }
+    .settings-grid {
+      align-items: end;
+      grid-template-columns: minmax(240px, 1.2fr) repeat(2, minmax(180px, 1fr));
+    }
+    .question-card .field-grid {
+      grid-template-columns: minmax(150px, 0.9fr) minmax(220px, 1.25fr) minmax(150px, 0.7fr) minmax(190px, 1fr);
+    }
+    .field-grid label,
+    .question-card label {
+      font-size: 0.92rem;
+      margin-top: 0;
+    }
+    .field-grid input,
+    .field-grid select,
+    .question-options {
+      min-height: 2.75rem;
     }
     .checkbox-container {
       display: flex;
@@ -42,28 +123,50 @@
       margin-top: 1rem;
     }
     .checkbox-container input {
-      width: auto;
+      accent-color: #c25328;
+      height: 1.05rem;
       margin: 0;
+      width: 1.05rem;
     }
     .checkbox-container label {
       margin-top: 0;
     }
+    .toggle-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem 1rem;
+      margin-top: 1rem;
+    }
+    .toggle-grid .checkbox-container {
+      background: #fffaf6;
+      border: 1px solid #eadbd0;
+      border-radius: 8px;
+      margin-top: 0;
+      min-height: 2.75rem;
+      padding: 0.55rem 0.75rem;
+    }
     .question-card {
       border: 1px solid #eadbd0;
       border-radius: 8px;
-      padding: 1rem;
+      padding: clamp(1rem, 2vw, 1.35rem);
       margin-top: 1rem;
-      background: #fffaf5;
+      background: linear-gradient(180deg, #fffdfb 0%, #fff8f3 100%);
+      box-shadow: 0 10px 28px rgba(81, 53, 34, 0.06);
     }
     .question-card-header {
       align-items: center;
       display: flex;
       justify-content: space-between;
       gap: 1rem;
+      margin-bottom: 1rem;
     }
     .question-card h4 {
       margin: 0;
       color: var(--color-text);
+      font-size: 1.05rem;
+      line-height: 1.35;
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
     .question-tools {
       display: flex;
@@ -80,7 +183,7 @@
       min-height: 5rem;
       resize: vertical;
       width: 100%;
-      padding: 0.6rem;
+      padding: 0.65rem 0.75rem;
       font: inherit;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-sm);
@@ -92,6 +195,31 @@
       gap: 0.75rem;
       flex-wrap: wrap;
       margin-top: 1.5rem;
+    }
+    .admin-actions {
+      align-items: center;
+      background: rgba(255, 250, 245, 0.94);
+      backdrop-filter: blur(14px);
+      border: 1px solid #eadbd0;
+      border-radius: 8px;
+      box-shadow: 0 12px 34px rgba(82, 52, 32, 0.1);
+      bottom: max(0.75rem, env(safe-area-inset-bottom));
+      justify-content: flex-end;
+      padding: 0.75rem;
+      position: sticky;
+      z-index: 4;
+    }
+    .admin-actions button,
+    .section-actions button,
+    .question-tools button {
+      min-height: 2.7rem;
+      padding: 0.65rem 1rem;
+    }
+    .section-actions button {
+      background: #3f6f67;
+    }
+    .section-actions button:hover:not(:disabled) {
+      background: #315a54;
     }
     .danger {
       background-color: #b42318;
@@ -108,6 +236,7 @@
     .status {
       margin-top: 1rem;
       min-height: 1.5rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
     }
     .status.success {
       color: #1a8754;
@@ -115,28 +244,81 @@
     .status.error {
       color: #b42318;
     }
+    @media (max-width: 980px) {
+      .admin-hero {
+        align-items: start;
+        grid-template-columns: 1fr;
+      }
+      .settings-grid,
+      .question-card .field-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
     @media (max-width: 640px) {
+      .admin-page .container {
+        width: min(calc(100% - 1rem), 1180px);
+      }
+      .admin-panel {
+        padding-bottom: calc(8.75rem + env(safe-area-inset-bottom));
+      }
       .field-grid {
+        grid-template-columns: 1fr;
+      }
+      .settings-grid,
+      .question-card .field-grid {
         grid-template-columns: 1fr;
       }
       .question-card-header {
         align-items: flex-start;
         flex-direction: column;
       }
+      .question-tools,
+      .question-tools button,
+      .section-actions button {
+        width: 100%;
+      }
+      .admin-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        left: max(0.75rem, env(safe-area-inset-left));
+        margin: 0 auto;
+        max-width: 420px;
+        padding: 0.55rem;
+        position: fixed;
+        right: max(0.75rem, env(safe-area-inset-right));
+      }
+      .admin-actions button {
+        font-size: 0.9rem;
+        min-height: 2.6rem;
+        padding: 0.55rem 0.65rem;
+        width: 100%;
+      }
+      .admin-actions #saveConfigBtn {
+        grid-column: 1 / -1;
+      }
+      .status {
+        padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+      }
     }
   </style>
 </head>
-<body>
+<body class="admin-page">
   <div class="container">
-    <h2>Mellow.Sundae</h2>
+    <header class="admin-hero">
+      <div>
+        <p class="admin-eyebrow">Mellow.Sundae admin</p>
+        <h1>จัดการฟอร์มลงทะเบียน</h1>
+        <p>ปรับคำถาม ตัวเลือก และสถานะฟอร์มในหน้ากว้างที่อ่านง่ายขึ้นบน laptop โดยยังคงใช้งานบนมือถือได้สบาย</p>
+      </div>
+      <div class="admin-badge">Live form setup</div>
+    </header>
     <div class="admin-panel">
-      <h3>จัดการฟอร์มลงทะเบียน</h3>
-
       <div class="admin-section">
         <label for="adminToken">Admin token</label>
         <input type="password" id="adminToken" placeholder="Token from Apps Script properties">
 
-        <div class="field-grid">
+        <div class="field-grid settings-grid">
           <div>
             <label for="eventName">ชื่อกิจกรรม</label>
             <input type="text" id="eventName" placeholder="เช่น Mellow.Sundae Weekly Run">
@@ -155,19 +337,21 @@
           </div>
         </div>
 
-        <div class="checkbox-container">
-          <input type="checkbox" id="allowFollowers" checked>
-          <label for="allowFollowers">Allow followers</label>
-        </div>
+        <div class="toggle-grid">
+          <div class="checkbox-container">
+            <input type="checkbox" id="allowFollowers" checked>
+            <label for="allowFollowers">Allow followers</label>
+          </div>
 
-        <div class="checkbox-container">
-          <input type="checkbox" id="isRegistrationOpen" checked>
-          <label for="isRegistrationOpen">Open registration</label>
-        </div>
+          <div class="checkbox-container">
+            <input type="checkbox" id="isRegistrationOpen" checked>
+            <label for="isRegistrationOpen">Open registration</label>
+          </div>
 
-        <div class="checkbox-container">
-          <input type="checkbox" id="enableQuestionnaire" checked>
-          <label for="enableQuestionnaire">Enable additional questionnaire</label>
+          <div class="checkbox-container">
+            <input type="checkbox" id="enableQuestionnaire" checked>
+            <label for="enableQuestionnaire">Enable additional questionnaire</label>
+          </div>
         </div>
       </div>
 
@@ -379,15 +563,39 @@
       });
     }
 
+    function normalizeLabelForRequired(label, isRequired) {
+      const baseLabel = String(label || "").trim().replace(/\s*\*+\s*$/g, "");
+      return isRequired && baseLabel ? `${baseLabel}*` : baseLabel;
+    }
+
+    function getQuestionTitle(label, name, isRequired) {
+      return normalizeLabelForRequired(label, isRequired) || name || "New question";
+    }
+
+    function syncRequiredLabel(card, title, shouldMutateInput) {
+      const labelInput = card.querySelector('[data-field="label"]');
+      const nameInput = card.querySelector('[data-field="name"]');
+      const requiredInput = card.querySelector('[data-field="required"]');
+      const nextLabel = normalizeLabelForRequired(labelInput.value, requiredInput.checked);
+
+      if (shouldMutateInput || requiredInput.checked) {
+        labelInput.value = nextLabel;
+      }
+
+      title.textContent = nextLabel || nameInput.value || "New question";
+    }
+
     function createQuestionCard(question) {
       const card = document.createElement("div");
       card.className = "question-card";
+      const required = question.required === true;
+      const labelValue = normalizeLabelForRequired(question.label || "", required);
 
       const header = document.createElement("div");
       header.className = "question-card-header";
 
       const title = document.createElement("h4");
-      title.textContent = question.label || question.name || "New question";
+      title.textContent = getQuestionTitle(labelValue, question.name, required);
       header.appendChild(title);
 
       const tools = document.createElement("div");
@@ -409,12 +617,12 @@
       const grid = document.createElement("div");
       grid.className = "field-grid";
       grid.appendChild(createTextField("Name", "name", question.name || ""));
-      grid.appendChild(createTextField("Label", "label", question.label || ""));
+      grid.appendChild(createTextField("Label", "label", labelValue));
       grid.appendChild(createTypeField(question.type || "text"));
       grid.appendChild(createTextField("Placeholder", "placeholder", question.placeholder || ""));
       card.appendChild(grid);
 
-      const requiredWrap = createCheckboxField("Required", "required", question.required === true);
+      const requiredWrap = createCheckboxField("Required", "required", required);
       const readonlyWrap = createCheckboxField("Readonly", "readonly", question.readonly === true);
       card.appendChild(requiredWrap);
       card.appendChild(readonlyWrap);
@@ -439,8 +647,18 @@
       });
       updateOptionsVisibility(card);
 
+      card.querySelector('[data-field="required"]').addEventListener("change", () => {
+        syncRequiredLabel(card, title, true);
+      });
       card.querySelector('[data-field="label"]').addEventListener("input", (event) => {
-        title.textContent = event.target.value || card.querySelector('[data-field="name"]').value || "New question";
+        title.textContent = getQuestionTitle(
+          event.target.value,
+          card.querySelector('[data-field="name"]').value,
+          card.querySelector('[data-field="required"]').checked
+        );
+      });
+      card.querySelector('[data-field="label"]').addEventListener("blur", () => {
+        syncRequiredLabel(card, title, true);
       });
       card.querySelector('[data-field="name"]').addEventListener("input", (event) => {
         if (!card.querySelector('[data-field="label"]').value) {
@@ -533,15 +751,16 @@
 
     function collectQuestions(container) {
       return Array.from(container.querySelectorAll(".question-card")).map((card) => {
+        const isRequired = card.querySelector('[data-field="required"]').checked;
         const question = {
           name: card.querySelector('[data-field="name"]').value.trim(),
-          label: card.querySelector('[data-field="label"]').value.trim(),
+          label: normalizeLabelForRequired(card.querySelector('[data-field="label"]').value, isRequired),
           type: card.querySelector('[data-field="type"]').value
         };
 
         const placeholder = card.querySelector('[data-field="placeholder"]').value.trim();
         if (placeholder) question.placeholder = placeholder;
-        if (card.querySelector('[data-field="required"]').checked) question.required = true;
+        if (isRequired) question.required = true;
         if (card.querySelector('[data-field="readonly"]').checked) question.readonly = true;
 
         if (OPTION_TYPES.includes(question.type)) {
@@ -601,7 +820,7 @@
     function normalizeQuestion(question) {
       const normalized = {
         name: String(question.name || "").trim(),
-        label: String(question.label || "").trim(),
+        label: normalizeLabelForRequired(question.label, question.required === true),
         type: String(question.type || "text").trim(),
         required: question.required === true,
         readonly: question.readonly === true,
