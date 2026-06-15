@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>จัดการฟอร์มลงทะเบียน</title>
-  <link href="styles.css?v=20260615-4" rel="stylesheet" />
+  <link href="styles.css?v=20260615-5" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
@@ -199,7 +199,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-4";
+    const APP_VERSION = "20260615-5";
     const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
@@ -289,17 +289,19 @@
       });
     }
 
-    async function postToAppsScript(params) {
-      const body = new URLSearchParams();
-      Object.keys(params).forEach((key) => {
-        body.append(key, params[key]);
+    async function saveToAppsScript(definition, adminToken) {
+      const result = await callAppsScriptJsonp({
+        action: "save_form_definition",
+        adminToken,
+        definition: JSON.stringify(definition),
+        t: Date.now().toString()
       });
 
-      await fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        body
-      });
+      if (!result || result.ok !== true) {
+        throw new Error(result && result.error ? result.error : "Apps Script did not confirm the save");
+      }
+
+      return result.definition;
     }
 
     function mergeFormDefinition(localDefinition, remoteDefinition) {
@@ -597,15 +599,48 @@
     }
 
     function normalizeQuestion(question) {
-      return {
-        name: question.name || "",
-        label: question.label || "",
-        type: question.type || "text",
+      const normalized = {
+        name: String(question.name || "").trim(),
+        label: String(question.label || "").trim(),
+        type: String(question.type || "text").trim(),
         required: question.required === true,
         readonly: question.readonly === true,
-        placeholder: question.placeholder || "",
-        options: JSON.stringify(question.options || [])
+        placeholder: String(question.placeholder || "").trim(),
+        options: "[]"
       };
+
+      if (OPTION_TYPES.includes(normalized.type)) {
+        normalized.options = JSON.stringify((question.options || []).map((option) => {
+          if (typeof option === "string") return option.trim();
+
+          return {
+            value: String(option.value || "").trim(),
+            label: String(option.label || "").trim()
+          };
+        }).filter((option) => {
+          if (typeof option === "string") return option;
+          return option.value && option.label;
+        }));
+      }
+
+      return normalized;
+    }
+
+    function describeQuestionMismatch(sectionName, expectedQuestions, actualQuestions) {
+      if (expectedQuestions.length !== actualQuestions.length) {
+        return `${sectionName} questions did not update (${actualQuestions.length}/${expectedQuestions.length} saved)`;
+      }
+
+      for (let index = 0; index < expectedQuestions.length; index += 1) {
+        const expected = expectedQuestions[index];
+        const actual = actualQuestions[index];
+
+        if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+          return `${sectionName} question ${index + 1} "${expected.name || actual.name || "unnamed"}" did not match after saving`;
+        }
+      }
+
+      return "";
     }
 
     function getDefinitionMismatch(expected, actual) {
@@ -639,12 +674,11 @@
       if (JSON.stringify(expectedConfig) !== JSON.stringify(actualConfig)) {
         return "event settings or titles did not update";
       }
-      if (JSON.stringify(expectedMain) !== JSON.stringify(actualMain)) {
-        return `main questions did not update (${actualMain.length}/${expectedMain.length} saved)`;
-      }
-      if (JSON.stringify(expectedAdditional) !== JSON.stringify(actualAdditional)) {
-        return `additional questions did not update (${actualAdditional.length}/${expectedAdditional.length} saved)`;
-      }
+      const mainMismatch = describeQuestionMismatch("main", expectedMain, actualMain);
+      if (mainMismatch) return mainMismatch;
+
+      const additionalMismatch = describeQuestionMismatch("additional", expectedAdditional, actualAdditional);
+      if (additionalMismatch) return additionalMismatch;
 
       return "";
     }
@@ -716,14 +750,8 @@
       setStatus("กำลังบันทึกข้อมูล...", "");
 
       try {
-        await postToAppsScript({
-          action: "save_form_definition",
-          adminToken: adminToken,
-          definition: JSON.stringify(definition)
-        });
-
-        setStatus("ส่งข้อมูลแล้ว กำลังตรวจสอบ spreadsheet...", "");
-        await waitForSavedDefinition(definition);
+        const savedDefinition = await saveToAppsScript(definition, adminToken);
+        renderDefinition(validateRemoteFormDefinition(savedDefinition));
 
         setStatus("บันทึกข้อมูลลง spreadsheet แล้ว", "success");
       } catch (err) {
