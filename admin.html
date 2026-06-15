@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>จัดการฟอร์มลงทะเบียน</title>
-  <link href="styles.css?v=20260615-2" rel="stylesheet" />
+  <link href="styles.css?v=20260615-3" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
@@ -199,7 +199,8 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-2";
+    const APP_VERSION = "20260615-3";
+    const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
       enableQuestionnaire: true,
@@ -260,7 +261,7 @@
         const timeout = window.setTimeout(() => {
           cleanup();
           reject(new Error("Timed out while loading form definition"));
-        }, 5000);
+        }, REMOTE_FORM_TIMEOUT_MS);
 
         function cleanup() {
           window.clearTimeout(timeout);
@@ -288,49 +289,16 @@
       });
     }
 
-    function postToAppsScript(params) {
-      return new Promise((resolve) => {
-        const frameName = `msAdminPostFrame_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        const iframe = document.createElement("iframe");
-        iframe.name = frameName;
-        iframe.style.display = "none";
+    async function postToAppsScript(params) {
+      const body = new URLSearchParams();
+      Object.keys(params).forEach((key) => {
+        body.append(key, params[key]);
+      });
 
-        const form = document.createElement("form");
-        form.action = WEB_APP_URL;
-        form.method = "POST";
-        form.target = frameName;
-        form.style.display = "none";
-
-        Object.keys(params).forEach((key) => {
-          const field = key === "definition"
-            ? document.createElement("textarea")
-            : document.createElement("input");
-          field.name = key;
-          field.value = params[key];
-          form.appendChild(field);
-        });
-
-        const cleanup = () => {
-          window.setTimeout(() => {
-            iframe.remove();
-            form.remove();
-          }, 0);
-        };
-
-        const timeout = window.setTimeout(() => {
-          cleanup();
-          resolve();
-        }, 8000);
-
-        iframe.addEventListener("load", () => {
-          window.clearTimeout(timeout);
-          cleanup();
-          resolve();
-        });
-
-        document.body.appendChild(iframe);
-        document.body.appendChild(form);
-        form.submit();
+      await fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body
       });
     }
 

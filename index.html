@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>ลงทะเบียน Mellow Sundae</title>
-  <link href="styles.css?v=20260615-2" rel="stylesheet" />
+  <link href="styles.css?v=20260615-3" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -57,7 +57,8 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-2";
+    const APP_VERSION = "20260615-3";
+    const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
       enableQuestionnaire: true,
@@ -137,7 +138,7 @@
         const timeout = window.setTimeout(() => {
           cleanup();
           reject(new Error("Timed out while loading remote form definition"));
-        }, 5000);
+        }, REMOTE_FORM_TIMEOUT_MS);
 
         function cleanup() {
           window.clearTimeout(timeout);
