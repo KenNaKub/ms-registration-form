@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>จัดการฟอร์มลงทะเบียน</title>
-  <link href="styles.css?v=20260615-3" rel="stylesheet" />
+  <link href="styles.css?v=20260615-4" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
@@ -199,7 +199,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-3";
+    const APP_VERSION = "20260615-4";
     const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
@@ -330,16 +330,29 @@
       };
     }
 
-    async function loadFormDefinition() {
-      const localDefinition = await loadLocalFormDefinition();
-
-      try {
-        const remoteDefinition = await loadRemoteFormDefinition();
-        return mergeFormDefinition(localDefinition, remoteDefinition || {});
-      } catch (err) {
-        console.warn("Using local form definition fallback:", err);
-        return mergeFormDefinition(localDefinition, {});
+    function validateRemoteFormDefinition(definition) {
+      if (!definition || typeof definition !== "object") {
+        throw new Error("Remote form definition was empty");
       }
+      if (!definition.config || !definition.main || !definition.questionnaire) {
+        throw new Error("Remote form definition is incomplete");
+      }
+      if (!Array.isArray(definition.main.questions)) {
+        throw new Error("Remote main questions are missing");
+      }
+      if (!Array.isArray(definition.questionnaire.questions)) {
+        throw new Error("Remote questionnaire questions are missing");
+      }
+
+      return {
+        config: { ...DEFAULT_CONFIG, ...definition.config },
+        main: definition.main,
+        questionnaire: definition.questionnaire
+      };
+    }
+
+    async function loadFormDefinition() {
+      return validateRemoteFormDefinition(await loadRemoteFormDefinition());
     }
 
     function renderDefinition(definition) {
@@ -674,7 +687,7 @@
     async function loadDefaults() {
       setStatus("กำลังโหลดค่า default จาก repo JSON...", "");
       const definition = await loadLocalFormDefinition();
-      renderDefinition(mergeFormDefinition(definition, {}));
+      renderDefinition(definition);
       setStatus("โหลดค่า default แล้ว ยังไม่ได้บันทึกลง spreadsheet", "success");
     }
 
@@ -735,7 +748,7 @@
 
     refreshDefinition().catch((err) => {
       console.error(err);
-      setStatus("โหลดข้อมูลไม่สำเร็จ", "error");
+      setStatus(`โหลดฟอร์มล่าสุดไม่สำเร็จ: ${err.message}`, "error");
     });
   </script>
 </body>
