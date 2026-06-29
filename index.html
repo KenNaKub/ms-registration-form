@@ -185,6 +185,7 @@
 
     // Dynamic field generator
     function generateField(q, container, config) {
+      const isRequired = q.required === true || /\*\s*$/.test(q.label || "");
       const label = document.createElement("label");
       label.textContent = q.label;
       if(q.name) label.setAttribute("for", q.name);
@@ -197,7 +198,7 @@
         input.type = q.type;
         input.name = q.name;
         input.id = q.name;
-        if(q.required) input.required = true;
+        if(isRequired) input.required = true;
         if(q.placeholder) input.placeholder = q.placeholder;
         if(q.readonly) {
           input.readOnly = true;
@@ -213,7 +214,7 @@
         const select = document.createElement("select");
         select.name = q.name;
         select.id = q.name;
-        if(q.required) select.required = true;
+        if(isRequired) select.required = true;
 
         let hasOther = false;
         q.options.forEach(opt => {
@@ -271,6 +272,7 @@
           const input = document.createElement("input");
           input.type = q.type;
           input.name = q.name;
+          if (isRequired && q.type === "radio") input.required = true;
           
           const val = typeof opt === "string" ? opt : opt.value;
           const text = typeof opt === "string" ? opt : opt.label;
@@ -288,6 +290,17 @@
           }
           container.appendChild(div);
         });
+
+        if (isRequired && q.type === "checkbox") {
+          const checkboxInputs = Array.from(container.querySelectorAll(`input[name="${q.name}"]`));
+          const updateRequiredCheckboxGroup = () => {
+            const hasChecked = checkboxInputs.some(input => input.checked);
+            checkboxInputs[0].setCustomValidity(hasChecked ? "" : "กรุณาเลือกคำตอบ");
+          };
+          checkboxInputs.forEach(input => input.addEventListener("change", updateRequiredCheckboxGroup));
+          form.addEventListener("reset", () => setTimeout(updateRequiredCheckboxGroup, 0));
+          updateRequiredCheckboxGroup();
+        }
 
         if (hasOther) {
           otherInput = document.createElement("input");
