@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>จัดการฟอร์มลงทะเบียน</title>
-  <link href="styles.css?v=20260615-5" rel="stylesheet" />
+  <link href="styles.css?v=20260629-1" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
   <style>
     body {
@@ -383,7 +383,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-5";
+    const APP_VERSION = "20260629-1";
     const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
@@ -474,18 +474,18 @@
     }
 
     async function saveToAppsScript(definition, adminToken) {
-      const result = await callAppsScriptJsonp({
-        action: "save_form_definition",
-        adminToken,
-        definition: JSON.stringify(definition),
-        t: Date.now().toString()
+      const body = new URLSearchParams();
+      body.set("action", "save_form_definition");
+      body.set("adminToken", adminToken);
+      body.set("definition", JSON.stringify(definition));
+
+      await fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body
       });
 
-      if (!result || result.ok !== true) {
-        throw new Error(result && result.error ? result.error : "Apps Script did not confirm the save");
-      }
-
-      return result.definition;
+      return waitForSavedDefinition(definition);
     }
 
     function mergeFormDefinition(localDefinition, remoteDefinition) {

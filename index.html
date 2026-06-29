@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>ลงทะเบียน Mellow Sundae</title>
-  <link href="styles.css?v=20260615-7" rel="stylesheet" />
+  <link href="styles.css?v=20260629-1" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -57,7 +57,7 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
-    const APP_VERSION = "20260615-7";
+    const APP_VERSION = "20260629-1";
     const REMOTE_FORM_TIMEOUT_MS = 15000;
     const DEFAULT_CONFIG = {
       isRegistrationOpen: true,
@@ -65,6 +65,7 @@
       eventName: "Mellow.Sundae Weekly Activity",
       allowFollowers: true
     };
+    let activeConfig = DEFAULT_CONFIG;
 
     const form = document.getElementById("regForm");
     const loading = document.getElementById("loading");
@@ -115,6 +116,13 @@
     }
 
     modalCloseBtn.addEventListener("click", closeModal);
+
+    function restoreGeneratedFieldValues() {
+      const activityInput = form.elements.activity;
+      if (activityInput) {
+        activityInput.value = activeConfig.eventName || DEFAULT_CONFIG.eventName;
+      }
+    }
 
     function loadRemoteFormDefinition() {
       return new Promise((resolve, reject) => {
@@ -324,6 +332,7 @@
       try {
         const definition = await loadFormDefinition();
         const config = definition.config;
+        activeConfig = config;
         
         if (!config.isRegistrationOpen) {
           loading.style.display = "none";
@@ -407,6 +416,7 @@
         statusMessage.style.color = "#1a8754";
 
         form.reset();
+        restoreGeneratedFieldValues();
         
         // Hide all dynamically shown "other" inputs
         document.querySelectorAll("input[id^='other_']").forEach(el => {
