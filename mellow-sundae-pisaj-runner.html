@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>ลงทะเบียน Mellow Sundae x ปีศาจรันเนอร์</title>
+  <link href="styles.css?v=20260629-1" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h2 id="eventTitle">Mellow Sundae x ปีศาจรันเนอร์</h2>
+    <h2 id="eventSubtitle">แบบฟอร์มลงทะเบียนเข้าร่วมงาน</h2>
+    
+    <div id="loading" style="text-align: center; margin: 2rem 0;">กำลังโหลดข้อมูล...</div>
+    <div id="closedMessage" style="text-align: center; color: red; display: none;">ปิดรับลงทะเบียนแล้ว</div>
+
+    <form id="regForm" style="display: none;">
+      <div id="mainFields"></div>
+      
+      <div class="questionnaire-area" id="questionnaireArea" style="display: none;">
+        <h2 id="questionnaireTitle">แบบสอบถามเพิ่มเติม</h2>
+        <div id="questionnaireFields"></div>
+      </div>
+
+      <button type="submit" id="submitBtn">ส่งข้อมูล</button>
+      <p id="statusMessage"></p>
+    </form>
+
+    <p class="footer-note">Mellow Sundae x ปีศาจรันเนอร์</p>
+  </div>
+
+  <!-- BACKDROP -->
+  <div id="modalBackdrop" class="modal-backdrop"></div>
+
+  <!-- MODAL -->
+  <div id="modalBox" class="modal">
+    <div class="modal-card">
+      <h3 class="modal-title" id="modalTitle">กำลังส่งข้อมูล...</h3>
+
+      <div class="modal-spinner" id="modalSpinner"></div>
+
+      <div class="modal-body" id="modalBody">
+        กำลังบันทึกข้อมูลการลงทะเบียนของคุณ
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="modalCloseBtn" class="btn btn-primary" style="display:none;">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPA4WZtRFhKVlsVK83kBb9MgqKpgKDhIUXIRnjJG0xlcHf1oskyc4wqIZu2GRbYB8/exec";
+    const APP_VERSION = "20260629-1";
+    const REMOTE_FORM_TIMEOUT_MS = 15000;
+    const ONE_TIME_EVENT_NAME = "Mellow Sundae x ปีศาจรันเนอร์";
+    const ONE_TIME_PAGE_CONFIG = {
+      eventName: ONE_TIME_EVENT_NAME,
+      enableQuestionnaire: false
+    };
+    const DEFAULT_CONFIG = {
+      isRegistrationOpen: true,
+      enableQuestionnaire: false,
+      eventName: ONE_TIME_EVENT_NAME,
+      allowFollowers: true
+    };
+    let activeConfig = DEFAULT_CONFIG;
+
+    const form = document.getElementById("regForm");
+    const loading = document.getElementById("loading");
+    const closedMessage = document.getElementById("closedMessage");
+    const mainFields = document.getElementById("mainFields");
+    const questionnaireArea = document.getElementById("questionnaireArea");
+    const questionnaireFields = document.getElementById("questionnaireFields");
+    const eventTitle = document.getElementById("eventTitle");
+    const eventSubtitle = document.getElementById("eventSubtitle");
+    const questionnaireTitle = document.getElementById("questionnaireTitle");
+
+    // Modal elements
+    const submitBtn     = document.getElementById("submitBtn");
+    const statusMessage = document.getElementById("statusMessage");
+    const modalBox      = document.getElementById("modalBox");
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle    = document.getElementById("modalTitle");
+    const modalBody     = document.getElementById("modalBody");
+    const modalSpinner  = document.getElementById("modalSpinner");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+    function openModalLoading() {
+      modalTitle.textContent = "กำลังส่งข้อมูล...";
+      modalBody.textContent  = "กำลังบันทึกข้อมูลการลงทะเบียนของคุณ";
+      modalSpinner.style.display = "block";
+      modalCloseBtn.style.display = "none";
+      modalBox.classList.add("show");
+      modalBackdrop.classList.add("show");
+    }
+
+    function openModalSuccess() {
+      modalTitle.textContent = "ลงทะเบียนสำเร็จ 🎉";
+      modalBody.textContent  = "ขอบคุณที่มาวิ่งกับ Mellow.Sundae 🧡";
+      modalSpinner.style.display = "none";
+      modalCloseBtn.style.display = "inline-block";
+    }
+
+    function openModalError() {
+      modalTitle.textContent = "มีบางอย่างผิดพลาด";
+      modalBody.textContent  = "กรุณาลองใหม่อีกครั้ง หรือทักเพจ Mellow.Sundae";
+      modalSpinner.style.display = "none";
+      modalCloseBtn.style.display = "inline-block";
+    }
+
+    function closeModal() {
+      modalBox.classList.remove("show");
+      modalBackdrop.classList.remove("show");
+    }
+
+    modalCloseBtn.addEventListener("click", closeModal);
+
+    function restoreGeneratedFieldValues() {
+      const activityInput = form.elements.activity;
+      if (activityInput) {
+        activityInput.value = activeConfig.eventName || DEFAULT_CONFIG.eventName;
+      }
+    }
+
+    function loadRemoteFormDefinition() {
+      return new Promise((resolve, reject) => {
+        const callbackName = `msFormCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const script = document.createElement("script");
+        const timeout = window.setTimeout(() => {
+          cleanup();
+          reject(new Error("Timed out while loading remote form definition"));
+        }, REMOTE_FORM_TIMEOUT_MS);
+
+        function cleanup() {
+          window.clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+        }
+
+        window[callbackName] = function (definition) {
+          cleanup();
+          resolve(definition);
+        };
+
+        script.onerror = function () {
+          cleanup();
+          reject(new Error("Could not load remote form definition"));
+        };
+
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set("action", "get_form_definition");
+        url.searchParams.set("callback", callbackName);
+        url.searchParams.set("t", Date.now().toString());
+        script.src = url.href;
+        document.head.appendChild(script);
+      });
+    }
+
+    function validateRemoteFormDefinition(definition) {
+      if (!definition || typeof definition !== "object") {
+        throw new Error("Remote form definition was empty");
+      }
+      if (!definition.config || !definition.main || !definition.questionnaire) {
+        throw new Error("Remote form definition is incomplete");
+      }
+      if (!Array.isArray(definition.main.questions)) {
+        throw new Error("Remote main questions are missing");
+      }
+      if (!Array.isArray(definition.questionnaire.questions)) {
+        throw new Error("Remote questionnaire questions are missing");
+      }
+
+      return {
+        config: { ...DEFAULT_CONFIG, ...definition.config },
+        main: definition.main,
+        questionnaire: definition.questionnaire
+      };
+    }
+
+    async function loadFormDefinition() {
+      return validateRemoteFormDefinition(await loadRemoteFormDefinition());
+    }
+
+    // Dynamic field generator
+    function generateField(q, container, config) {
+      const label = document.createElement("label");
+      label.textContent = q.label;
+      if(q.name) label.setAttribute("for", q.name);
+      container.appendChild(label);
+
+      let otherInput = null;
+
+      if (q.type === "text" || q.type === "tel" || q.type === "number" || q.type === "email") {
+        const input = document.createElement("input");
+        input.type = q.type;
+        input.name = q.name;
+        input.id = q.name;
+        if(q.required) input.required = true;
+        if(q.placeholder) input.placeholder = q.placeholder;
+        if(q.readonly) {
+          input.readOnly = true;
+          input.classList.add("readonly-input");
+        }
+        
+        if (q.name === "activity") {
+          input.value = config.eventName || ONE_TIME_EVENT_NAME;
+        }
+
+        container.appendChild(input);
+      } else if (q.type === "select") {
+        const select = document.createElement("select");
+        select.name = q.name;
+        select.id = q.name;
+        if(q.required) select.required = true;
+
+        let hasOther = false;
+        q.options.forEach(opt => {
+          const option = document.createElement("option");
+          const val = typeof opt === "string" ? opt : opt.value;
+          const text = typeof opt === "string" ? opt : opt.label;
+          if (val === "other") {
+            hasOther = true;
+            option.value = "other";
+            option.textContent = "อื่น ๆ โปรดระบุ";
+          } else {
+            option.value = val;
+            option.textContent = text;
+          }
+          select.appendChild(option);
+        });
+        container.appendChild(select);
+
+        if (hasOther) {
+          otherInput = document.createElement("input");
+          otherInput.type = "text";
+          otherInput.name = `other_${q.name}`;
+          otherInput.id = `other_${q.name}_input`;
+          otherInput.style.display = "none";
+          otherInput.style.marginTop = "5px";
+          otherInput.placeholder = "โปรดระบุ";
+          container.appendChild(otherInput);
+
+          select.addEventListener("change", function() {
+            if (select.value === "other") {
+              otherInput.style.display = "block";
+              otherInput.required = true;
+            } else {
+              otherInput.style.display = "none";
+              otherInput.required = false;
+              otherInput.value = "";
+            }
+          });
+        }
+        
+        if (q.name === "followers") {
+          if (config.allowFollowers === false) {
+            container.removeChild(select);
+            if (otherInput) container.removeChild(otherInput);
+            const msg = document.createElement("p");
+            msg.style.color = "#a55";
+            msg.textContent = "⚠️ งานนี้ไม่เปิดให้ผู้ติดตามเข้าร่วม";
+            container.appendChild(msg);
+          }
+        }
+      } else if (q.type === "radio" || q.type === "checkbox") {
+        let hasOther = false;
+        q.options.forEach((opt, index) => {
+          const div = document.createElement("div");
+          const input = document.createElement("input");
+          input.type = q.type;
+          input.name = q.name;
+          
+          const val = typeof opt === "string" ? opt : opt.value;
+          const text = typeof opt === "string" ? opt : opt.label;
+
+          if (val === "other") {
+            hasOther = true;
+            input.value = "other";
+            input.id = `other_${q.name}_${q.type}`;
+            div.appendChild(input);
+            div.appendChild(document.createTextNode(" อื่น ๆ โปรดระบุ"));
+          } else {
+            input.value = val;
+            div.appendChild(input);
+            div.appendChild(document.createTextNode(" " + text));
+          }
+          container.appendChild(div);
+        });
+
+        if (hasOther) {
+          otherInput = document.createElement("input");
+          otherInput.type = "text";
+          otherInput.name = `other_${q.name}`;
+          otherInput.id = `other_${q.name}_input`;
+          otherInput.style.display = "none";
+          otherInput.style.marginTop = "5px";
+          otherInput.placeholder = "โปรดระบุ";
+          container.appendChild(otherInput);
+
+          const inputs = container.querySelectorAll(`input[name="${q.name}"]`);
+          inputs.forEach(inp => {
+            inp.addEventListener("change", function() {
+              if (q.type === "radio") {
+                if (this.value === "other") {
+                  otherInput.style.display = "block";
+                  otherInput.required = true;
+                } else {
+                  otherInput.style.display = "none";
+                  otherInput.required = false;
+                  otherInput.value = "";
+                }
+              } else if (q.type === "checkbox") {
+                const otherCheckbox = container.querySelector(`#other_${q.name}_${q.type}`);
+                if (otherCheckbox.checked) {
+                  otherInput.style.display = "block";
+                  otherInput.required = true;
+                } else {
+                  otherInput.style.display = "none";
+                  otherInput.required = false;
+                  otherInput.value = "";
+                }
+              }
+            });
+          });
+        }
+      }
+    }
+
+    async function init() {
+      try {
+        const definition = await loadFormDefinition();
+        const config = { ...definition.config, ...ONE_TIME_PAGE_CONFIG };
+        activeConfig = config;
+        
+        if (!config.isRegistrationOpen) {
+          loading.style.display = "none";
+          closedMessage.style.display = "block";
+          return;
+        }
+
+        const mainData = definition.main;
+
+        eventTitle.textContent = ONE_TIME_EVENT_NAME;
+        if (mainData.subtitle) eventSubtitle.textContent = mainData.subtitle;
+
+        mainData.questions.forEach(q => generateField(q, mainFields, config));
+
+        if (config.enableQuestionnaire) {
+          const qData = definition.questionnaire;
+          if (qData.title) questionnaireTitle.textContent = qData.title;
+          qData.questions.forEach(q => generateField(q, questionnaireFields, config));
+          questionnaireArea.style.display = "block";
+        }
+
+        loading.style.display = "none";
+        form.style.display = "block";
+
+      } catch (err) {
+        console.error(err);
+        loading.textContent = "ไม่สามารถโหลดฟอร์มล่าสุดได้ กรุณารีเฟรชหน้า ปิดส่วนขยายที่บล็อกเว็บไซต์ หรือลองเปิดด้วยเบราว์เซอร์อื่น";
+      }
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      if (!navigator.onLine) {
+        openModalError();
+        modalBody.textContent = "ดูเหมือนว่าคุณออฟไลน์อยู่ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "กำลังส่ง...";
+      statusMessage.textContent = "";
+
+      openModalLoading();
+
+      const formData = new FormData(form);
+      const dataToSubmit = new URLSearchParams();
+      
+      const allKeys = new Set(formData.keys());
+      for (const key of allKeys) {
+        if (key.startsWith("other_")) continue; // Will be handled when processing the main key
+        
+        let values = formData.getAll(key);
+        
+        // Handle 'other' resolution
+        if (values.includes("other")) {
+          const otherVal = formData.get(`other_${key}`);
+          values = values.map(v => v === "other" ? (otherVal || "อื่น ๆ") : v);
+        }
+        
+        // Special case for followers to add ' คน' if they typed a number in 'other'
+        if (key === "followers" && formData.getAll(key).includes("other")) {
+           const otherFollowers = formData.get("other_followers");
+           if (otherFollowers) values = [otherFollowers + " คน"];
+        }
+        
+        dataToSubmit.append(key, values.join(", "));
+      }
+
+      try {
+        await fetch(WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          body: dataToSubmit
+        });
+      } catch (err) {
+        console.error("A fetch error occurred, but we are proceeding as if successful:", err);
+      } finally {
+        openModalSuccess();
+        statusMessage.textContent = "✅ ลงทะเบียนสำเร็จ! ขอบคุณที่มาวิ่งกับเรา 🧡";
+        statusMessage.style.color = "#1a8754";
+
+        form.reset();
+        restoreGeneratedFieldValues();
+        
+        // Hide all dynamically shown "other" inputs
+        document.querySelectorAll("input[id^='other_']").forEach(el => {
+          if(el.type === "text") {
+            el.style.display = "none";
+            el.required = false;
+          }
+        });
+
+        submitBtn.disabled = false;
+        submitBtn.innerText = "ส่งข้อมูล";
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
